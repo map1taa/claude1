@@ -34,6 +34,7 @@ export default function Home() {
   const form = useForm<FormData>({
     resolver: zodResolver(insertSpotSchema),
     defaultValues: {
+      listName: "",
       region: "",
       title: "",
       location: "",
@@ -86,7 +87,17 @@ export default function Home() {
   });
 
   const onSubmit = (data: FormData) => {
-    createSpotMutation.mutate(data as any);
+    createSpotMutation.mutate(data as any, {
+      onSuccess: () => {
+        form.reset({
+          listName: "",
+          region: "",
+          title: "",
+          location: "",
+          comment: "",
+        });
+      },
+    });
   };
 
   const handleDelete = (id: number) => {
@@ -186,6 +197,27 @@ export default function Home() {
 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="listName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
+                            リスト名
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：お気に入りカフェ"
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={form.control}
                       name="region"
@@ -344,6 +376,11 @@ export default function Home() {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                              {spot.listName}
+                            </span>
+                          </div>
                           <h3 className="text-xl font-bold text-slate-800 mb-2">
                             {spot.title}
                           </h3>

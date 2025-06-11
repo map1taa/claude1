@@ -59,6 +59,7 @@ export type InsertFollow = typeof follows.$inferInsert;
 export const spots = pgTable("spots", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listName: text("list_name").notNull(),
   region: text("region").notNull(),
   title: text("title").notNull(),
   location: text("location").notNull(),
