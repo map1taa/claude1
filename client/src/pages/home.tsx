@@ -436,6 +436,75 @@ export default function Home() {
                   </CardContent>
                 </Card>
 
+                {/* Places List Section */}
+                <Card className="shadow-sm">
+                  <CardContent className="p-6">
+                    <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
+                      場所一覧
+                    </h4>
+                    {isLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : spots.length === 0 ? (
+                      <p className="text-slate-500 text-sm">まだ場所が登録されていません</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {spots.map((spot) => (
+                          <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#3e80a8' }}>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h5 className="font-medium text-slate-800">{spot.placeName || 'タイトルなし'}</h5>
+                                <p className="text-sm text-slate-600 mt-1">{spot.comment}</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  {spot.listName && (
+                                    <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                                      {spot.listName}
+                                    </span>
+                                  )}
+                                  {spot.region && (
+                                    <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                                      {spot.region}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              {isAuthenticated && (user as any)?.id === spot.userId && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 ml-2">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>スポットを削除</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        このスポットを削除してもよろしいですか？この操作は取り消せません。
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDelete(spot.id)}>
+                                        削除
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </>
             )}
           </div>
