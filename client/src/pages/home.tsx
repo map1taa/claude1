@@ -73,15 +73,15 @@ export default function Home() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
       toast({
-        title: "スポットが追加されました",
-        description: "新しいスポットが正常に追加されました！",
+        title: "場所が追加されました",
+        description: `「${currentList.listName}」に場所を追加しました。続けて他の場所も追加できます。`,
       });
       form.reset();
     },
     onError: () => {
       toast({
         title: "エラー",
-        description: "スポットの追加に失敗しました。",
+        description: "場所の追加に失敗しました。",
         variant: "destructive",
       });
     },
@@ -231,7 +231,7 @@ export default function Home() {
                 <Tabs defaultValue="list-creation" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="list-creation">リスト作成</TabsTrigger>
-                    <TabsTrigger value="add-item">リストを追加</TabsTrigger>
+                    <TabsTrigger value="add-item">場所を追加</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="list-creation" className="space-y-6">
@@ -298,7 +298,8 @@ export default function Home() {
                       <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
                       <p className="text-sm text-slate-600">
                         名前: {currentList.listName}<br />
-                        地域: {currentList.region}
+                        地域: {currentList.region}<br />
+                        登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
                       </p>
                     </div>
                   </TabsContent>
@@ -380,7 +381,7 @@ export default function Home() {
                           disabled={createSpotMutation.isPending}
                         >
                           <Plus className="mr-2 h-4 w-4" />
-                          {createSpotMutation.isPending ? "追加中..." : "リストを追加"}
+                          {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
                         </Button>
                       </form>
                     </Form>
