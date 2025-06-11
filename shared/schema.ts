@@ -59,10 +59,10 @@ export type InsertFollow = typeof follows.$inferInsert;
 export const spots = pgTable("spots", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  listName: text("list_name").notNull(),
-  region: text("region").notNull(),
-  title: text("title").notNull(),
-  location: text("location").notNull(),
+  listName: text("list_name").notNull().default("あしあとリスト"),
+  region: text("region").notNull().default("全国"),
+  placeName: text("place_name").notNull(),
+  url: text("url").notNull(),
   comment: text("comment").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
@@ -72,6 +72,8 @@ export const spots = pgTable("spots", {
 export const insertSpotSchema = createInsertSchema(spots).omit({
   id: true,
   userId: true,
+  listName: true,
+  region: true,
   createdAt: true,
 });
 

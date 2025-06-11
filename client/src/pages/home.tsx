@@ -34,10 +34,8 @@ export default function Home() {
   const form = useForm<FormData>({
     resolver: zodResolver(insertSpotSchema),
     defaultValues: {
-      listName: "",
-      region: "",
-      title: "",
-      location: "",
+      placeName: "",
+      url: "",
       comment: "",
     },
   });
@@ -90,10 +88,8 @@ export default function Home() {
     createSpotMutation.mutate(data as any, {
       onSuccess: () => {
         form.reset({
-          listName: "",
-          region: "",
-          title: "",
-          location: "",
+          placeName: "",
+          url: "",
           comment: "",
         });
       },
