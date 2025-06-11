@@ -229,89 +229,8 @@ export default function Home() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Spots List Section - First Column on PC */}
-          <div className="lg:col-span-2 lg:order-1">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-800 flex items-center">
-                <List className="mr-2 h-6 w-6" style={{ color: '#3e80a8' }} />
-                場所一覧
-              </h2>
-              <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {spots.length} 件の場所
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <Card key={i} className="shadow-sm">
-                    <CardContent className="p-6">
-                      <div className="animate-pulse">
-                        <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-slate-200 rounded w-1/2"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : spots.length === 0 ? (
-              <Card className="shadow-sm">
-                <CardContent className="p-8 text-center">
-                  <div className="text-slate-400 mb-4">
-                    <MapPin className="h-12 w-12 mx-auto" />
-                  </div>
-                  <h3 className="text-lg font-medium text-slate-600 mb-2">まだスポットがありません</h3>
-                  <p className="text-slate-500">最初のスポットを追加してみましょう！</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {spots.map((spot) => (
-                  <Card key={spot.id} className="shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-slate-800 flex items-center mb-2">
-                            <MapPin className="mr-2 h-4 w-4" style={{ color: '#3e80a8' }} />
-                            {spot.placeName}
-                          </h3>
-                          
-                          <p className="text-slate-600">{spot.comment}</p>
-                        </div>
-                        
-                        {isAuthenticated && (user as any)?.id === spot.userId && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>スポットを削除</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  このスポットを削除してもよろしいですか？この操作は取り消せません。
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(spot.id)}>
-                                  削除
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* List Creation and Place Addition - Second Column on PC */}
-          <div className="lg:col-span-1 lg:order-2 space-y-6">
+          {/* List Creation and Place Addition - First Column on PC */}
+          <div className="lg:col-span-1 lg:order-1 space-y-6">
             {currentView === "list" ? (
               <Card className="shadow-lg" style={{ border: '1.5mm solid #3e80a8' }}>
                 <CardContent className="p-6">
@@ -376,8 +295,6 @@ export default function Home() {
                       </Button>
                     </form>
                   </Form>
-                  
-
                 </CardContent>
               </Card>
             ) : (
@@ -397,8 +314,6 @@ export default function Home() {
                       リスト作成に戻る
                     </Button>
                   </div>
-                  
-
 
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -479,6 +394,87 @@ export default function Home() {
                   </Form>
                 </CardContent>
               </Card>
+            )}
+          </div>
+
+          {/* Spots List Section - Second Column on PC */}
+          <div className="lg:col-span-2 lg:order-2">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-800 flex items-center">
+                <List className="mr-2 h-6 w-6" style={{ color: '#3e80a8' }} />
+                場所一覧
+              </h2>
+              <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                {spots.length} 件の場所
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : spots.length === 0 ? (
+              <Card className="shadow-sm">
+                <CardContent className="p-8 text-center">
+                  <div className="text-slate-400 mb-4">
+                    <MapPin className="h-12 w-12 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-600 mb-2">まだスポットがありません</h3>
+                  <p className="text-slate-500">最初のスポットを追加してみましょう！</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {spots.map((spot) => (
+                  <Card key={spot.id} className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-slate-800 flex items-center mb-2">
+                            <MapPin className="mr-2 h-4 w-4" style={{ color: '#3e80a8' }} />
+                            {spot.placeName}
+                          </h3>
+                          
+                          <p className="text-slate-600">{spot.comment}</p>
+                        </div>
+                        
+                        {isAuthenticated && (user as any)?.id === spot.userId && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>スポットを削除</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  このスポットを削除してもよろしいですか？この操作は取り消せません。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(spot.id)}>
+                                  削除
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
 
