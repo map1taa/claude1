@@ -198,7 +198,7 @@ export default function Home() {
           {/* List Creation and Place Addition */}
           <div className="lg:col-span-1 space-y-6">
             {currentView === "list" ? (
-              <Card className="shadow-lg" style={{ border: '1mm solid #3e80a8' }}>
+              <Card className="shadow-lg" style={{ border: '1mm solid #d94d02' }}>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
                   <Form {...listForm}>
@@ -273,7 +273,7 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-lg" style={{ border: '1mm solid #3e80a8' }}>
+              <Card className="shadow-lg" style={{ border: '1mm solid #d94d02' }}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-slate-800 flex items-center">
