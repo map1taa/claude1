@@ -3,6 +3,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSpotSchema, type Spot, type InsertSpot } from "@shared/schema";
+import { z } from "zod";
+
+// Form type for handling string tags input
+const formSchema = insertSpotSchema.extend({
+  tags: z.string().optional(),
+});
+type FormData = z.infer<typeof formSchema>;
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -26,9 +33,7 @@ export default function Home() {
 
   // Update displayed spots when data changes
   useEffect(() => {
-    if (spots) {
-      setDisplayedSpots(spots);
-    }
+    setDisplayedSpots(spots);
   }, [spots]);
 
   // Form setup
@@ -39,7 +44,7 @@ export default function Home() {
       title: "",
       location: "",
       comment: "",
-      tags: [],
+      tags: "",
     },
   });
 
@@ -88,14 +93,7 @@ export default function Home() {
   });
 
   const onSubmit = (data: InsertSpot) => {
-    // Process tags if they come as a string
-    const processedData = {
-      ...data,
-      tags: typeof data.tags === 'string' 
-        ? (data.tags as string).split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-        : data.tags || []
-    };
-    createSpotMutation.mutate(processedData);
+    createSpotMutation.mutate(data);
   };
 
   const handleDelete = (id: number) => {
@@ -158,6 +156,27 @@ export default function Home() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <FormField
                       control={form.control}
+                      name="region"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <Globe className="text-slate-400 mr-1 h-4 w-4" />
+                            地域
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：関東地方"
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="title"
                       render={({ field }) => (
                         <FormItem>
@@ -205,14 +224,36 @@ export default function Home() {
                         <FormItem>
                           <FormLabel className="text-slate-700 flex items-center">
                             <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
-                            コメント
+                            おすすめ理由
                           </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="このスポットについて詳しく教えてください..."
+                              placeholder="このスポットをおすすめする理由を教えてください..."
                               rows={4}
                               className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                               {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="tags"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <Tag className="text-slate-400 mr-1 h-4 w-4" />
+                            タグ（カンマ区切り）
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：ラーメン, 安い, 駅近"
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value)}
                             />
                           </FormControl>
                           <FormMessage />
@@ -242,9 +283,40 @@ export default function Home() {
                 投稿されたスポット
               </h2>
               <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {spots.length} 件のスポット
+                {displayedSpots.length} 件のスポット
               </div>
             </div>
+
+            {/* Search Bar */}
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="タグで検索..."
+                      value={searchTag}
+                      onChange={(e) => setSearchTag(e.target.value)}
+                      className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSearch}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    検索
+                  </Button>
+                  <Button
+                    onClick={resetSearch}
+                    variant="outline"
+                    className="border-slate-300 text-slate-600 hover:bg-slate-50"
+                  >
+                    リセット
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {isLoading ? (
               <div className="space-y-4">
@@ -258,27 +330,33 @@ export default function Home() {
                   </Card>
                 ))}
               </div>
-            ) : spots.length === 0 ? (
+            ) : displayedSpots.length === 0 ? (
               <Card className="border-2 border-dashed border-slate-200">
                 <CardContent className="text-center py-12">
                   <MapPin className="text-slate-300 h-16 w-16 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-slate-600 mb-2">
-                    まだスポットが投稿されていません
+                    {searchTag ? "検索結果が見つかりませんでした" : "まだスポットが投稿されていません"}
                   </h3>
                   <p className="text-slate-500">
-                    左のフォームから最初のスポットを追加してみましょう！
+                    {searchTag ? "別のタグで検索してみてください" : "左のフォームから最初のスポットを追加してみましょう！"}
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-4">
-                {spots.map((spot) => (
+                {displayedSpots.map((spot) => (
                   <Card key={spot.id} className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-xl font-bold text-slate-800 flex-1">
-                          {spot.title}
-                        </h3>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-slate-800 mb-2">
+                            {spot.title}
+                          </h3>
+                          <div className="flex items-center text-slate-600 mb-2">
+                            <Globe className="text-green-500 mr-2 h-4 w-4" />
+                            <span className="font-medium text-sm">{spot.region}</span>
+                          </div>
+                        </div>
                         <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full ml-4">
                           {spot.createdAt}
                         </span>
@@ -292,6 +370,18 @@ export default function Home() {
                       <p className="text-slate-700 leading-relaxed mb-4">
                         {spot.comment}
                       </p>
+
+                      {/* Tags */}
+                      {spot.tags && spot.tags.length > 0 && (
+                        <div className="flex items-center flex-wrap gap-2 mb-4">
+                          <Tag className="text-slate-400 h-4 w-4" />
+                          {spot.tags.map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                         <div className="flex items-center text-slate-500 text-sm">

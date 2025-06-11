@@ -15,8 +15,11 @@ export const spots = pgTable("spots", {
 export const insertSpotSchema = createInsertSchema(spots).omit({
   id: true,
   createdAt: true,
+  tags: true,
 }).extend({
-  tags: z.array(z.string()).optional().default([]),
+  tags: z.string().optional().transform((val) => 
+    val ? val.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : []
+  ),
 });
 
 export type InsertSpot = z.infer<typeof insertSpotSchema>;
