@@ -37,8 +37,8 @@ export default function Home() {
   }, [spots]);
 
   // Form setup
-  const form = useForm<InsertSpot>({
-    resolver: zodResolver(insertSpotSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       region: "",
       title: "",
@@ -92,8 +92,8 @@ export default function Home() {
     },
   });
 
-  const onSubmit = (data: InsertSpot) => {
-    createSpotMutation.mutate(data);
+  const onSubmit = (data: FormData) => {
+    createSpotMutation.mutate(data as any);
   };
 
   const handleDelete = (id: number) => {
