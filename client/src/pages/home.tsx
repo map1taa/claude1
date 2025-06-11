@@ -377,14 +377,7 @@ export default function Home() {
                     </form>
                   </Form>
                   
-                  <div className="bg-slate-100 p-4 rounded-lg mt-4">
-                    <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
-                    <p className="text-sm text-slate-600">
-                      名前: {currentList.listName}<br />
-                      地域: {currentList.region}<br />
-                      登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
-                    </p>
-                  </div>
+
                 </CardContent>
               </Card>
             ) : (
@@ -405,14 +398,7 @@ export default function Home() {
                     </Button>
                   </div>
                   
-                  <div className="bg-slate-100 p-4 rounded-lg mb-4">
-                    <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
-                    <p className="text-sm text-slate-600">
-                      名前: {currentList.listName}<br />
-                      地域: {currentList.region}<br />
-                      登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
-                    </p>
-                  </div>
+
 
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
