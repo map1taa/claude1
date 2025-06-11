@@ -102,7 +102,18 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-slate-800 flex items-center">
-                <MapPin className="text-blue-600 mr-3 h-8 w-8" />
+                <svg className="text-blue-600 mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                  {/* Main paw pad */}
+                  <ellipse cx="12" cy="16" rx="4" ry="3.5" />
+                  {/* Top left toe */}
+                  <ellipse cx="8" cy="8" rx="1.5" ry="2.5" transform="rotate(-20 8 8)" />
+                  {/* Top center toe */}
+                  <ellipse cx="12" cy="6" rx="1.5" ry="2.5" />
+                  {/* Top right toe */}
+                  <ellipse cx="16" cy="8" rx="1.5" ry="2.5" transform="rotate(20 16 8)" />
+                  {/* Middle toe */}
+                  <ellipse cx="12" cy="11" rx="1.3" ry="2" />
+                </svg>
                 あしあと
               </h1>
               <p className="text-slate-600 mt-2">
