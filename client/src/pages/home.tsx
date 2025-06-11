@@ -36,6 +36,9 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   
+  // Navigation state
+  const [currentView, setCurrentView] = useState<"list" | "spots">("list");
+  
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
     queryKey: ["/api/spots"],
@@ -43,7 +46,7 @@ export default function Home() {
 
   // Form setup for spot creation
   const form = useForm<FormData>({
-    resolver: zodResolver(insertSpotSchema),
+    resolver: zodResolver(insertSpotSchema.pick({ placeName: true, url: true, comment: true })),
     defaultValues: {
       placeName: "",
       url: "",
@@ -119,10 +122,11 @@ export default function Home() {
 
   const onListSubmit = (data: ListFormData) => {
     setCurrentList(data);
+    setCurrentView("spots"); // Navigate to spot addition view
     listForm.reset();
     toast({
-      title: "リストを更新しました",
-      description: `リスト名: ${data.listName}, 地域: ${data.region}`,
+      title: "リストを作成しました",
+      description: `「${data.listName}」に場所を追加できます`,
     });
   };
 
@@ -226,92 +230,109 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* List Creation and Place Addition */}
           <div className="lg:col-span-1 space-y-6">
-            {/* List Creation Section */}
-            <Card className="shadow-lg border-0">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
-                <Form {...listForm}>
-                  <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
-                    <FormField
-                      control={listForm.control}
-                      name="listName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700">リスト名</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="例：お気に入りカフェ"
-                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={listForm.control}
-                      name="region"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700">地域</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+            {currentView === "list" ? (
+              <Card className="shadow-lg border-0">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
+                  <Form {...listForm}>
+                    <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
+                      <FormField
+                        control={listForm.control}
+                        name="listName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700">リスト名</FormLabel>
                             <FormControl>
-                              <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="地域を選択" />
-                              </SelectTrigger>
+                              <Input
+                                placeholder="例：お気に入りカフェ"
+                                className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                {...field}
+                              />
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="全国">全国</SelectItem>
-                              <SelectItem value="北海道">北海道</SelectItem>
-                              <SelectItem value="東北">東北</SelectItem>
-                              <SelectItem value="関東">関東</SelectItem>
-                              <SelectItem value="中部">中部</SelectItem>
-                              <SelectItem value="関西">関西</SelectItem>
-                              <SelectItem value="中国">中国</SelectItem>
-                              <SelectItem value="四国">四国</SelectItem>
-                              <SelectItem value="九州">九州</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
-                      style={{ backgroundColor: '#3e80a8' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#2d5d7b'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#3e80a8'}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={listForm.control}
+                        name="region"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700">地域</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                  <SelectValue placeholder="地域を選択" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="全国">全国</SelectItem>
+                                <SelectItem value="北海道">北海道</SelectItem>
+                                <SelectItem value="東北">東北</SelectItem>
+                                <SelectItem value="関東">関東</SelectItem>
+                                <SelectItem value="中部">中部</SelectItem>
+                                <SelectItem value="関西">関西</SelectItem>
+                                <SelectItem value="中国">中国</SelectItem>
+                                <SelectItem value="四国">四国</SelectItem>
+                                <SelectItem value="九州">九州</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
+                        style={{ backgroundColor: '#3e80a8' }}
+                        onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#2d5d7b'}
+                        onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#3e80a8'}
+                      >
+                        リストを作成
+                      </Button>
+                    </form>
+                  </Form>
+                  
+                  <div className="bg-slate-100 p-4 rounded-lg mt-4">
+                    <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
+                    <p className="text-sm text-slate-600">
+                      名前: {currentList.listName}<br />
+                      地域: {currentList.region}<br />
+                      登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="shadow-lg border-0">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-800 flex items-center">
+                      <Plus className="text-[#3e80a8] mr-2 h-5 w-5" />
+                      場所を追加
+                    </h3>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentView("list")}
+                      className="text-sm"
                     >
-                      リストを作成
+                      リスト作成に戻る
                     </Button>
-                  </form>
-                </Form>
-                
-                <div className="bg-slate-100 p-4 rounded-lg mt-4">
-                  <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
-                  <p className="text-sm text-slate-600">
-                    名前: {currentList.listName}<br />
-                    地域: {currentList.region}<br />
-                    登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                  
+                  <div className="bg-slate-100 p-4 rounded-lg mb-4">
+                    <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
+                    <p className="text-sm text-slate-600">
+                      名前: {currentList.listName}<br />
+                      地域: {currentList.region}<br />
+                      登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
+                    </p>
+                  </div>
 
-            {/* Place Addition Section */}
-            <Card className="shadow-lg border-0">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                  <Plus className="text-[#3e80a8] mr-2 h-5 w-5" />
-                  場所を追加
-                </h3>
-                
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <FormField
                       control={form.control}
                       name="placeName"

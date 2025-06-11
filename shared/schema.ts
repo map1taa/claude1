@@ -72,8 +72,6 @@ export const spots = pgTable("spots", {
 export const insertSpotSchema = createInsertSchema(spots).omit({
   id: true,
   userId: true,
-  listName: true,
-  region: true,
   createdAt: true,
 });
 
