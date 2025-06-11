@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users } from "lucide-react";
@@ -24,6 +27,11 @@ type FormData = {
   comment: string;
 };
 
+type ListFormData = {
+  listName: string;
+  region: string;
+};
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -33,7 +41,7 @@ export default function Home() {
     queryKey: ["/api/spots"],
   });
 
-  // Form setup
+  // Form setup for spot creation
   const form = useForm<FormData>({
     resolver: zodResolver(insertSpotSchema),
     defaultValues: {
@@ -41,6 +49,20 @@ export default function Home() {
       url: "",
       comment: "",
     },
+  });
+
+  // Form setup for list creation
+  const listForm = useForm<ListFormData>({
+    defaultValues: {
+      listName: "",
+      region: "",
+    },
+  });
+
+  // Current list state
+  const [currentList, setCurrentList] = useState<ListFormData>({
+    listName: "あしあとリスト",
+    region: "全国",
   });
 
   // Create spot mutation
@@ -87,7 +109,21 @@ export default function Home() {
   });
 
   const onSubmit = (data: FormData) => {
-    createSpotMutation.mutate(data as InsertSpot);
+    const spotData = {
+      ...data,
+      listName: currentList.listName,
+      region: currentList.region,
+    };
+    createSpotMutation.mutate(spotData as InsertSpot);
+  };
+
+  const onListSubmit = (data: ListFormData) => {
+    setCurrentList(data);
+    listForm.reset();
+    toast({
+      title: "リストを更新しました",
+      description: `リスト名: ${data.listName}, 地域: ${data.region}`,
+    });
   };
 
   const handleDelete = (id: number) => {
@@ -188,18 +224,94 @@ export default function Home() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Add Spot Form */}
+          {/* Tabbed Interface */}
           <div className="lg:col-span-1">
             <Card className="shadow-lg border-0">
               <CardContent className="p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                  <Plus className="text-blue-600 mr-2 h-5 w-5" />
-                  リストを追加
-                </h2>
-
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                    <FormField
+                <Tabs defaultValue="list-creation" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="list-creation">リスト作成</TabsTrigger>
+                    <TabsTrigger value="add-item">リストを追加</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="list-creation" className="space-y-6">
+                    <h3 className="text-lg font-semibold text-slate-800">リスト設定</h3>
+                    <Form {...listForm}>
+                      <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
+                        <FormField
+                          control={listForm.control}
+                          name="listName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700">リスト名</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="例：お気に入りカフェ"
+                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={listForm.control}
+                          name="region"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700">地域</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <SelectValue placeholder="地域を選択" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="全国">全国</SelectItem>
+                                  <SelectItem value="北海道">北海道</SelectItem>
+                                  <SelectItem value="東北">東北</SelectItem>
+                                  <SelectItem value="関東">関東</SelectItem>
+                                  <SelectItem value="中部">中部</SelectItem>
+                                  <SelectItem value="関西">関西</SelectItem>
+                                  <SelectItem value="中国">中国</SelectItem>
+                                  <SelectItem value="四国">四国</SelectItem>
+                                  <SelectItem value="九州">九州</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                        >
+                          リストを作成
+                        </Button>
+                      </form>
+                    </Form>
+                    
+                    <div className="bg-slate-100 p-4 rounded-lg">
+                      <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
+                      <p className="text-sm text-slate-600">
+                        名前: {currentList.listName}<br />
+                        地域: {currentList.region}
+                      </p>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="add-item" className="space-y-6">
+                    <h3 className="text-lg font-semibold text-slate-800 flex items-center">
+                      <Plus className="text-blue-600 mr-2 h-5 w-5" />
+                      場所を追加
+                    </h3>
+                    
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                        <FormField
                       control={form.control}
                       name="placeName"
                       render={({ field }) => (
@@ -262,16 +374,18 @@ export default function Home() {
                       )}
                     />
 
-                    <Button
-                      type="submit"
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3"
-                      disabled={createSpotMutation.isPending}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      {createSpotMutation.isPending ? "追加中..." : "リストを追加"}
-                    </Button>
-                  </form>
-                </Form>
+                        <Button
+                          type="submit"
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3"
+                          disabled={createSpotMutation.isPending}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          {createSpotMutation.isPending ? "追加中..." : "リストを追加"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
