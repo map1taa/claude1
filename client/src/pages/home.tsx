@@ -185,19 +185,19 @@ export default function Home() {
                 <p className="text-slate-600 mt-1">お気に入りの場所を記録しよう</p>
                 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between items-center mt-4 w-full max-w-md">
+                <div className="flex justify-between items-center mt-4 w-full">
                   <button 
-                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors cursor-pointer"
+                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors cursor-pointer flex-1 text-left"
                     onClick={() => setCurrentView("list")}
                   >
                     リスト作成
                   </button>
                   <button 
-                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors cursor-pointer"
+                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors cursor-pointer flex-1 text-center"
                   >
                     リスト一覧
                   </button>
-                  <Link href="/profile" className="text-slate-600 hover:text-slate-800 font-medium transition-colors">
+                  <Link href="/profile" className="text-slate-600 hover:text-slate-800 font-medium transition-colors flex-1 text-right">
                     プロフィール
                   </Link>
                 </div>
