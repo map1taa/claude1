@@ -150,7 +150,7 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Form Section */}
           <div className="lg:col-span-1">
             <Card className="sticky top-8 shadow-lg">
@@ -391,6 +391,88 @@ export default function Home() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Profile Section */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-8 shadow-lg">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                  <UserIcon className="text-blue-600 mr-2 h-5 w-5" />
+                  プロフィール
+                </h2>
+
+                {user && (
+                  <div className="space-y-4">
+                    {/* User Avatar and Name */}
+                    <div className="text-center">
+                      <Avatar className="h-16 w-16 mx-auto mb-3">
+                        <AvatarImage src={user.profileImageUrl || undefined} />
+                        <AvatarFallback className="text-lg font-medium">
+                          {user.firstName ? user.firstName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <h3 className="font-bold text-slate-800">
+                        {user.firstName && user.lastName 
+                          ? `${user.firstName} ${user.lastName}` 
+                          : user.email || "ユーザー"}
+                      </h3>
+                      {user.email && (
+                        <p className="text-sm text-slate-600">{user.email}</p>
+                      )}
+                    </div>
+
+                    {/* Bio */}
+                    {user.bio && (
+                      <div>
+                        <h4 className="font-medium text-slate-800 mb-2">自己紹介</h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">{user.bio}</p>
+                      </div>
+                    )}
+
+                    {/* User Stats */}
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-1 gap-3 text-center">
+                        <div>
+                          <div className="text-xl font-bold text-blue-600">{spots.filter(spot => spot.user.id === user.id).length}</div>
+                          <div className="text-xs text-slate-600">投稿したリスト</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* User's Recent Posts */}
+                    <div>
+                      <h4 className="font-medium text-slate-800 mb-3">最近の投稿</h4>
+                      <div className="space-y-2">
+                        {spots.filter(spot => spot.user.id === user.id).slice(0, 3).map((spot) => (
+                          <div key={spot.id} className="bg-slate-50 p-3 rounded border">
+                            <h5 className="font-medium text-sm text-slate-800 mb-1">{spot.title}</h5>
+                            <div className="flex items-center text-xs text-slate-600 mb-1">
+                              <Globe className="text-green-500 mr-1 h-3 w-3" />
+                              <span>{spot.region}</span>
+                            </div>
+                            <p className="text-xs text-slate-600 line-clamp-2">{spot.comment}</p>
+                          </div>
+                        ))}
+                        {spots.filter(spot => spot.user.id === user.id).length === 0 && (
+                          <p className="text-xs text-slate-500 text-center py-4">まだ投稿がありません</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Profile Link */}
+                    <div className="pt-4 border-t border-slate-200">
+                      <Button asChild variant="outline" className="w-full">
+                        <Link href="/profile">
+                          <Settings className="mr-2 h-4 w-4" />
+                          プロフィール設定
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
