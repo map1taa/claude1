@@ -107,7 +107,7 @@ export default function Home() {
                 あしあと
               </h1>
               <p className="text-slate-600 mt-2">
-                あなたのお気に入りの場所を記録・共有しましょう
+                あなたのお気に入りのスポットを記録・共有しましょう
               </p>
             </div>
             
