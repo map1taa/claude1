@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,25 +9,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List } from "lucide-react";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Search, Tag, Globe } from "lucide-react";
 
 export default function Home() {
   const { toast } = useToast();
+  const [searchTag, setSearchTag] = useState("");
+  const [displayedSpots, setDisplayedSpots] = useState<Spot[]>([]);
 
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<Spot[]>({
     queryKey: ["/api/spots"],
   });
 
+  // Update displayed spots when data changes
+  useEffect(() => {
+    if (spots) {
+      setDisplayedSpots(spots);
+    }
+  }, [spots]);
+
   // Form setup
   const form = useForm<InsertSpot>({
     resolver: zodResolver(insertSpotSchema),
     defaultValues: {
+      region: "",
       title: "",
       location: "",
       comment: "",
+      tags: [],
     },
   });
 
@@ -76,11 +88,44 @@ export default function Home() {
   });
 
   const onSubmit = (data: InsertSpot) => {
-    createSpotMutation.mutate(data);
+    // Process tags if they come as a string
+    const processedData = {
+      ...data,
+      tags: typeof data.tags === 'string' 
+        ? (data.tags as string).split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+        : data.tags || []
+    };
+    createSpotMutation.mutate(processedData);
   };
 
   const handleDelete = (id: number) => {
     deleteSpotMutation.mutate(id);
+  };
+
+  const handleSearch = async () => {
+    if (!searchTag.trim()) {
+      setDisplayedSpots(spots);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/spots/search?tag=${encodeURIComponent(searchTag.trim())}`);
+      if (response.ok) {
+        const searchResults = await response.json();
+        setDisplayedSpots(searchResults);
+      }
+    } catch (error) {
+      toast({
+        title: "検索エラー",
+        description: "タグ検索に失敗しました。",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetSearch = () => {
+    setSearchTag("");
+    setDisplayedSpots(spots);
   };
 
   return (

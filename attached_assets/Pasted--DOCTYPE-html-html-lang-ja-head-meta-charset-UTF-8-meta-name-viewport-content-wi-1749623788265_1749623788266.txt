@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>おすすめスポットログ</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; }
+    .spot-card { border: 1px solid #ccc; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
+    .spot-card h3 { margin: 0 0 0.5em 0; }
+    .form-group { margin-bottom: 1em; }
+    label { display: block; margin-bottom: 0.2em; }
+    input, textarea, select { width: 100%; padding: 0.5em; }
+    button { padding: 0.5em 1em; }
+    #map { height: 300px; margin-top: 1em; }
+  </style>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+</head>
+<body>
+  <h1>おすすめスポットログ</h1>
+
+  <div>
+    <h2>スポット追加</h2>
+    <div class="form-group">
+      <label for="region">地域</label>
+      <input type="text" id="region">
+    </div>
+    <div class="form-group">
+      <label for="title">タイトル</label>
+      <input type="text" id="title">
+    </div>
+    <div class="form-group">
+      <label for="comment">おすすめ理由</label>
+      <textarea id="comment" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="location">場所</label>
+      <input type="text" id="location">
+    </div>
+    <div class="form-group">
+      <label for="tags">タグ（カンマ区切り）</label>
+      <input type="text" id="tags">
+    </div>
+    <button onclick="addSpot()">追加</button>
+  </div>
+
+  <hr>
+  <h2>投稿されたスポット</h2>
+  <input type="text" id="searchTag" placeholder="タグ検索">
+  <button onclick="filterByTag()">検索</button>
+  <div id="spots"></div>
+  <div id="map"></div>
+
+  <script>
+    const spots = [];
+    let map;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 35.6812, lng: 139.7671 },
+        zoom: 5
+      });
+    }
+
+    function addSpot() {
+      const region = document.getElementById('region').value;
+      const title = document.getElementById('title').value;
+      const comment = document.getElementById('comment').value;
+      const location = document.getElementById('location').value;
+      const tags = document.getElementById('tags').value.split(',').map(t => t.trim());
+
+      if (region && title && comment && location) {
+        const newSpot = { region, title, comment, location, tags };
+        spots.push(newSpot);
+        displaySpots(spots);
+        geocodeLocation(location, title);
+
+        document.getElementById('region').value = '';
+        document.getElementById('title').value = '';
+        document.getElementById('comment').value = '';
+        document.getElementById('location').value = '';
+        document.getElementById('tags').value = '';
+      }
+    }
+
+    function displaySpots(list) {
+      const spotContainer = document.getElementById('spots');
+      spotContainer.innerHTML = '';
+      list.forEach((spot) => {
+        const div = document.createElement('div');
+        div.className = 'spot-card';
+        div.innerHTML = `<h3>${spot.title}</h3><p><strong>地域:</strong> ${spot.region}</p><p><strong>場所:</strong> ${spot.location}</p><p><strong>理由:</strong> ${spot.comment}</p><p><strong>タグ:</strong> ${spot.tags.join(', ')}</p>`;
+        spotContainer.appendChild(div);
+      });
+    }
+
+    function filterByTag() {
+      const tag = document.getElementById('searchTag').value.trim();
+      if (tag) {
+        const filtered = spots.filter(s => s.tags.includes(tag));
+        displaySpots(filtered);
+      } else {
+        displaySpots(spots);
+      }
+    }
+
+    function geocodeLocation(location, title) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: location }, (results, status) => {
+        if (status === 'OK') {
+          const marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location,
+            title: title
+          });
+          map.setCenter(results[0].geometry.location);
+        }
+      });
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>

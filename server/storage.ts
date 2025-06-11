@@ -9,6 +9,7 @@ export interface IStorage {
   getAllSpots(): Promise<Spot[]>;
   createSpot(spot: InsertSpot): Promise<Spot>;
   deleteSpot(id: number): Promise<boolean>;
+  searchSpotsByTag(tag: string): Promise<Spot[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -48,9 +49,20 @@ export class MemStorage implements IStorage {
   async createSpot(insertSpot: InsertSpot): Promise<Spot> {
     const id = this.currentSpotId++;
     const createdAt = new Date().toLocaleDateString('ja-JP');
-    const spot: Spot = { ...insertSpot, id, createdAt };
+    const spot: Spot = { 
+      ...insertSpot, 
+      id, 
+      createdAt,
+      tags: insertSpot.tags || []
+    };
     this.spots.set(id, spot);
     return spot;
+  }
+
+  async searchSpotsByTag(tag: string): Promise<Spot[]> {
+    return Array.from(this.spots.values())
+      .filter(spot => spot.tags.some(t => t.toLowerCase().includes(tag.toLowerCase())))
+      .sort((a, b) => b.id - a.id);
   }
 
   async deleteSpot(id: number): Promise<boolean> {

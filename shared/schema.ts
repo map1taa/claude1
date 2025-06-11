@@ -4,15 +4,19 @@ import { z } from "zod";
 
 export const spots = pgTable("spots", {
   id: serial("id").primaryKey(),
+  region: text("region").notNull(),
   title: text("title").notNull(),
   location: text("location").notNull(),
   comment: text("comment").notNull(),
+  tags: text("tags").array().notNull().default([]),
   createdAt: text("created_at").notNull(),
 });
 
 export const insertSpotSchema = createInsertSchema(spots).omit({
   id: true,
   createdAt: true,
+}).extend({
+  tags: z.array(z.string()).optional().default([]),
 });
 
 export type InsertSpot = z.infer<typeof insertSpotSchema>;

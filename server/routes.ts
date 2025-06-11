@@ -29,6 +29,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Search spots by tag
+  app.get("/api/spots/search", async (req, res) => {
+    try {
+      const tag = req.query.tag as string;
+      if (!tag) {
+        return res.status(400).json({ message: "Tag parameter is required" });
+      }
+      
+      const spots = await storage.searchSpotsByTag(tag);
+      res.json(spots);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to search spots" });
+    }
+  });
+
   // Delete a spot
   app.delete("/api/spots/:id", async (req, res) => {
     try {
