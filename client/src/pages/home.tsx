@@ -283,7 +283,7 @@ export default function Home() {
                 投稿されたリスト
               </h2>
               <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {displayedSpots.length} 件のリスト
+                {spots.length} 件のリスト
               </div>
             </div>
 
@@ -301,7 +301,7 @@ export default function Home() {
                   </Card>
                 ))}
               </div>
-            ) : displayedSpots.length === 0 ? (
+            ) : spots.length === 0 ? (
               <Card className="border-2 border-dashed border-slate-200">
                 <CardContent className="text-center py-12">
                   <MapPin className="text-slate-300 h-16 w-16 mx-auto mb-4" />
@@ -315,7 +315,7 @@ export default function Home() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {displayedSpots.map((spot) => (
+                {spots.map((spot) => (
                   <Card key={spot.id} className="shadow-lg hover:shadow-xl transition-shadow duration-200">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
