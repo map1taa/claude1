@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>おすすめスポットログ - Firebase連携</title>
+  <script type="module">
+    // Firebase SDK の読み込み
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase設定
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Firebase初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore(app);
+
+    // ログイン処理
+    document.getElementById("loginBtn").onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        document.getElementById("userInfo").textContent = `ログイン中: ${user.displayName}`;
+        document.getElementById("spotForm").style.display = "block";
+        loadSpots();
+      } catch (error) {
+        alert("ログインエラー: " + error.message);
+      }
+    };
+
+    // 投稿保存
+    document.getElementById("addSpotBtn").onclick = async () => {
+      const region = document.getElementById("region").value;
+      const title = document.getElementById("title").value;
+      const comment = document.getElementById("comment").value;
+      const location = document.getElementById("location").value;
+
+      try {
+        await addDoc(collection(db, "spots"), {
+          region, title, comment, location,
+          timestamp: new Date()
+        });
+        alert("スポットを追加しました");
+        loadSpots();
+      } catch (e) {
+        alert("保存失敗: " + e.message);
+      }
+    };
+
+    // 投稿の読み込み
+    async function loadSpots() {
+      const querySnapshot = await getDocs(collection(db, "spots"));
+      const container = document.getElementById("spots");
+      container.innerHTML = "";
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.textContent = `${data.region} - ${data.title} - ${data.location} - ${data.comment}`;
+        container.appendChild(div);
+      });
+    }
+
+    // 自動ログイン状態チェック
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById("userInfo").textContent = `ログイン中: ${user.displayName}`;
+        document.getElementById("spotForm").style.display = "block";
+        loadSpots();
+      }
+    });
+  </script>
+</head>
+<body>
+  <h1>おすすめスポットログ</h1>
+  <p id="userInfo">ログインしていません</p>
+  <button id="loginBtn">Googleでログイン</button>
+
+  <div id="spotForm" style="display: none">
+    <h2>スポット追加</h2>
+    <label>地域: <input type="text" id="region"></label><br>
+    <label>タイトル: <input type="text" id="title"></label><br>
+    <label>場所: <input type="text" id="location"></label><br>
+    <label>おすすめ理由: <textarea id="comment"></textarea></label><br>
+    <button id="addSpotBtn">追加</button>
+  </div>
+
+  <hr>
+  <h2>投稿されたスポット</h2>
+  <div id="spots"></div>
+</body>
+</html>

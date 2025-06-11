@@ -6,11 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertSpotSchema, type Spot, type InsertSpot, type User } from "@shared/schema";
 import { z } from "zod";
 
-// Form type for handling string tags input
-const formSchema = insertSpotSchema.extend({
-  tags: z.string().optional(),
-});
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof insertSpotSchema>;
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -43,13 +39,12 @@ export default function Home() {
 
   // Form setup
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(insertSpotSchema),
     defaultValues: {
       region: "",
       title: "",
       location: "",
       comment: "",
-      tags: "",
     },
   });
 
@@ -283,27 +278,7 @@ export default function Home() {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="tags"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 flex items-center">
-                            <Tag className="text-slate-400 mr-1 h-4 w-4" />
-                            タグ（カンマ区切り）
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="例：ラーメン, 安い, 駅近"
-                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
 
                     <Button
                       type="submit"

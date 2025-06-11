@@ -63,7 +63,6 @@ export const spots = pgTable("spots", {
   title: text("title").notNull(),
   location: text("location").notNull(),
   comment: text("comment").notNull(),
-  tags: text("tags").array().notNull().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("spots_user_idx").on(table.userId),
@@ -73,11 +72,6 @@ export const insertSpotSchema = createInsertSchema(spots).omit({
   id: true,
   userId: true,
   createdAt: true,
-  tags: true,
-}).extend({
-  tags: z.string().optional().transform((val) => 
-    val ? val.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : []
-  ),
 });
 
 export type InsertSpot = z.infer<typeof insertSpotSchema>;
