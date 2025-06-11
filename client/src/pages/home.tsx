@@ -386,10 +386,10 @@ export default function Home() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-slate-800 flex items-center">
                 <List className="text-blue-600 mr-2 h-6 w-6" />
-                投稿されたリスト
+                場所一覧
               </h2>
               <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {spots.length} 件のリスト
+                {spots.length} 件の場所
               </div>
             </div>
 
@@ -423,66 +423,12 @@ export default function Home() {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={(spot.user as any)?.profileImageUrl || ""} alt={(spot.user as any)?.firstName || ""} />
-                              <AvatarFallback>
-                                {(spot.user as any)?.firstName?.charAt(0) || (spot.user as any)?.email?.charAt(0) || "U"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-slate-800">
-                                {(spot.user as any)?.firstName && (spot.user as any)?.lastName
-                                  ? `${(spot.user as any)?.firstName} ${(spot.user as any)?.lastName}`
-                                  : (spot.user as any)?.firstName || (spot.user as any)?.email}
-                              </p>
-                              <p className="text-sm text-slate-500">
-                                {(spot.user as any)?.email && !(spot.user as any)?.firstName ? (spot.user as any)?.email : ""}
-                              </p>
-                            </div>
-                          </div>
+                          <h3 className="text-lg font-semibold text-slate-800 flex items-center mb-2">
+                            <MapPin className="text-blue-600 mr-2 h-4 w-4" />
+                            {spot.placeName}
+                          </h3>
                           
-                          <div className="mb-3">
-                            <p className="text-sm text-slate-500 mb-1">
-                              {(spot.user as any)?.bio ? (spot.user as any)?.bio : ""}
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <h3 className="text-lg font-semibold text-slate-800 flex items-center">
-                              <MapPin className="text-blue-600 mr-2 h-4 w-4" />
-                              {spot.placeName}
-                            </h3>
-                            
-                            {spot.url && (
-                              <a
-                                href={spot.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
-                              >
-                                <Globe className="mr-1 h-3 w-3" />
-                                リンクを開く
-                              </a>
-                            )}
-                            
-                            <p className="text-slate-600">{spot.comment}</p>
-                            
-                            <div className="flex items-center space-x-4 mt-3">
-                              <Badge variant="secondary" className="text-xs">
-                                {spot.listName}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {spot.region}
-                              </Badge>
-                              {spot.createdAt && (
-                                <span className="text-xs text-slate-400 flex items-center">
-                                  <Calendar className="mr-1 h-3 w-3" />
-                                  {new Date(spot.createdAt).toLocaleDateString('ja-JP')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          <p className="text-slate-600">{spot.comment}</p>
                         </div>
                         
                         {isAuthenticated && (user as any)?.id === spot.userId && (
