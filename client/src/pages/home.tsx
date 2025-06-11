@@ -140,22 +140,56 @@ export default function Home() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-800 flex items-center">
-                <svg className="text-blue-600 mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
-                  {/* Main paw pad */}
-                  <ellipse cx="12" cy="16" rx="4" ry="3.5" />
-                  {/* Top left toe */}
-                  <ellipse cx="8" cy="8" rx="1.5" ry="2.5" transform="rotate(-20 8 8)" />
-                  {/* Top center toe */}
-                  <ellipse cx="12" cy="6" rx="1.5" ry="2.5" />
-                  {/* Top right toe */}
-                  <ellipse cx="16" cy="8" rx="1.5" ry="2.5" transform="rotate(20 16 8)" />
-                  {/* Middle toe */}
-                  <ellipse cx="14" cy="4" rx="1.2" ry="2" transform="rotate(10 14 4)" />
-                </svg>
-                あしあと
-              </h1>
-              <p className="text-slate-600 mt-1">お気に入りの場所を記録しよう</p>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-800 flex items-center">
+                  <svg className="mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#3e80a8' }}>
+                    {/* Main paw pad */}
+                    <ellipse cx="12" cy="16" rx="4" ry="3.5" />
+                    {/* Top left toe */}
+                    <ellipse cx="8" cy="8" rx="1.5" ry="2.5" transform="rotate(-20 8 8)" />
+                    {/* Top center toe */}
+                    <ellipse cx="12" cy="6" rx="1.5" ry="2.5" />
+                    {/* Top right toe */}
+                    <ellipse cx="16" cy="8" rx="1.5" ry="2.5" transform="rotate(20 16 8)" />
+                    {/* Middle toe */}
+                    <ellipse cx="14" cy="4" rx="1.2" ry="2" transform="rotate(10 14 4)" />
+                  </svg>
+                  あしあと
+                </h1>
+                <p className="text-slate-600 mt-1">お気に入りの場所を記録しよう</p>
+                
+                {/* Navigation Buttons */}
+                <div className="flex space-x-3 mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    style={{ borderColor: '#3e80a8', color: '#3e80a8' }}
+                  >
+                    <List className="mr-2 h-4 w-4" />
+                    リスト一覧
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    style={{ borderColor: '#3e80a8', color: '#3e80a8' }}
+                    onClick={() => setCurrentView("list")}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    リスト作成
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    style={{ borderColor: '#3e80a8', color: '#3e80a8' }}
+                    asChild
+                  >
+                    <Link href="/profile">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      プロフィール
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {isAuthenticated && (
@@ -195,8 +229,89 @@ export default function Home() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* List Creation and Place Addition */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* Spots List Section - First Column on PC */}
+          <div className="lg:col-span-2 lg:order-1">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-800 flex items-center">
+                <List className="mr-2 h-6 w-6" style={{ color: '#3e80a8' }} />
+                場所一覧
+              </h2>
+              <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                {spots.length} 件の場所
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="animate-pulse">
+                        <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : spots.length === 0 ? (
+              <Card className="shadow-sm">
+                <CardContent className="p-8 text-center">
+                  <div className="text-slate-400 mb-4">
+                    <MapPin className="h-12 w-12 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-600 mb-2">まだスポットがありません</h3>
+                  <p className="text-slate-500">最初のスポットを追加してみましょう！</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {spots.map((spot) => (
+                  <Card key={spot.id} className="shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-slate-800 flex items-center mb-2">
+                            <MapPin className="mr-2 h-4 w-4" style={{ color: '#3e80a8' }} />
+                            {spot.placeName}
+                          </h3>
+                          
+                          <p className="text-slate-600">{spot.comment}</p>
+                        </div>
+                        
+                        {isAuthenticated && (user as any)?.id === spot.userId && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>スポットを削除</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  このスポットを削除してもよろしいですか？この操作は取り消せません。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(spot.id)}>
+                                  削除
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* List Creation and Place Addition - Second Column on PC */}
+          <div className="lg:col-span-1 lg:order-2 space-y-6">
             {currentView === "list" ? (
               <Card className="shadow-lg" style={{ border: '1.5mm solid #3e80a8' }}>
                 <CardContent className="p-6">
@@ -277,7 +392,7 @@ export default function Home() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-slate-800 flex items-center">
-                      <Plus className="text-[#3e80a8] mr-2 h-5 w-5" />
+                      <Plus className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
                       場所を追加
                     </h3>
                     <Button
@@ -381,99 +496,22 @@ export default function Home() {
             )}
           </div>
 
-          {/* Spots List Section */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-800 flex items-center">
-                <List className="text-blue-600 mr-2 h-6 w-6" />
-                場所一覧
-              </h2>
-              <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {spots.length} 件の場所
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <Card key={i} className="shadow-sm">
-                    <CardContent className="p-6">
-                      <div className="animate-pulse">
-                        <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-slate-200 rounded w-1/2"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : spots.length === 0 ? (
-              <Card className="shadow-sm">
-                <CardContent className="p-8 text-center">
-                  <div className="text-slate-400 mb-4">
-                    <MapPin className="h-12 w-12 mx-auto" />
-                  </div>
-                  <h3 className="text-lg font-medium text-slate-600 mb-2">まだスポットがありません</h3>
-                  <p className="text-slate-500">最初のスポットを追加してみましょう！</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {spots.map((spot) => (
-                  <Card key={spot.id} className="shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-slate-800 flex items-center mb-2">
-                            <MapPin className="text-blue-600 mr-2 h-4 w-4" />
-                            {spot.placeName}
-                          </h3>
-                          
-                          <p className="text-slate-600">{spot.comment}</p>
-                        </div>
-                        
-                        {isAuthenticated && (user as any)?.id === spot.userId && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>スポットを削除</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  このスポットを削除してもよろしいですか？この操作は取り消せません。
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(spot.id)}>
-                                  削除
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* User List Section */}
-          <div className="lg:col-span-1">
+          {/* Profile Section - Third Column on PC */}
+          <div className="lg:col-span-1 lg:order-3">
             <div className="sticky top-8">
               <Card className="shadow-sm">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                    <Users className="text-blue-600 mr-2 h-5 w-5" />
+                    <Users className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
                     ユーザー
                   </h3>
                   <div className="space-y-3">
                     <Link href="/profile">
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        style={{ borderColor: '#3e80a8', color: '#3e80a8' }}
+                      >
                         <UserIcon className="mr-2 h-4 w-4" />
                         プロフィール設定
                       </Button>
