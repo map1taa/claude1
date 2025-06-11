@@ -20,7 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings } from "lucide-react";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users } from "lucide-react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -109,6 +109,30 @@ export default function Home() {
               <p className="text-slate-600 mt-2">
                 あなたのお気に入りのスポットを記録・共有しましょう
               </p>
+              
+              {/* Navigation Buttons */}
+              {isAuthenticated && (
+                <div className="flex items-center space-x-4 mt-4">
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/profile">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      プロフィール
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/following">
+                      <Users className="mr-2 h-4 w-4" />
+                      フォロー中
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/my-lists">
+                      <List className="mr-2 h-4 w-4" />
+                      マイリスト
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </div>
             
             {!isAuthenticated ? (
