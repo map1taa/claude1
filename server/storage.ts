@@ -35,6 +35,11 @@ export interface IStorage {
   getFollowers(userId: string): Promise<User[]>;
   getFollowing(userId: string): Promise<User[]>;
   getFollowCounts(userId: string): Promise<{ followers: number; following: number }>;
+  
+  // Recommendation methods
+  getPersonalizedRecommendations(userId: string, limit?: number): Promise<any[]>;
+  recordInteraction(userId: string, spotId: number, interactionType: string): Promise<void>;
+  updateUserPreferences(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
