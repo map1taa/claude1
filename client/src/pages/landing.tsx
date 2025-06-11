@@ -1,84 +1,167 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Users, Globe, Heart } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MapPin, Users, Heart, Star } from "lucide-react";
 
 export default function Landing() {
-  const handleLogin = () => {
-    window.location.href = "/api/login";
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-slate-800 mb-6 flex items-center justify-center">
-            <MapPin className="text-blue-600 mr-4 h-12 w-12" />
-            おすすめスポットログ
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
-            あなたのお気に入りの場所を記録・共有し、他のユーザーをフォローして新しいスポットを発見しましょう
-          </p>
-          <Button
-            onClick={handleLogin}
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg"
-          >
-            Replit でログイン
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <Card className="text-center p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="pt-6">
-              <MapPin className="text-blue-600 h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-800 mb-2">スポット記録</h3>
-              <p className="text-slate-600">
-                地域、タイトル、場所、おすすめ理由、タグを使ってお気に入りのスポットを詳細に記録できます
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="pt-6">
-              <Users className="text-green-600 h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-800 mb-2">フォロー機能</h3>
-              <p className="text-slate-600">
-                他のユーザーをフォローして、彼らがおすすめするスポットを発見しましょう
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="pt-6">
-              <Globe className="text-purple-600 h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-800 mb-2">検索・発見</h3>
-              <p className="text-slate-600">
-                タグやキーワードで検索して、新しいおすすめスポットを簡単に見つけることができます
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-slate-800 mb-8">
-            みんなでスポットを共有しましょう
-          </h2>
-          <div className="flex items-center justify-center space-x-8 text-slate-600">
+    <div className="bg-gradient-to-br from-blue-50 to-slate-100 min-h-screen">
+      {/* ヘッダー */}
+      <header className="bg-white shadow-sm border-b border-slate-200">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Heart className="text-red-500 mr-2 h-5 w-5" />
-              <span>お気に入りスポットを保存</span>
+              <MapPin className="text-blue-600 mr-3 h-8 w-8" />
+              <h1 className="text-3xl font-bold text-slate-800">
+                おすすめスポットログ
+              </h1>
             </div>
-            <div className="flex items-center">
-              <Users className="text-blue-500 mr-2 h-5 w-5" />
-              <span>コミュニティと共有</span>
-            </div>
-            <div className="flex items-center">
-              <MapPin className="text-green-500 mr-2 h-5 w-5" />
-              <span>新しい場所を発見</span>
-            </div>
+            <Button asChild>
+              <a href="/api/login" className="bg-blue-600 hover:bg-blue-700 text-white">
+                ログインして始める
+              </a>
+            </Button>
           </div>
         </div>
-      </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-16">
+        {/* ヒーローセクション */}
+        <section className="text-center mb-16">
+          <h2 className="text-5xl font-bold text-slate-800 mb-6">
+            あなたの
+            <span className="text-blue-600">お気に入りの場所</span>
+            を
+            <br />
+            みんなと共有しましょう
+          </h2>
+          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+            素敵な場所を発見したら、写真と一緒に投稿。
+            友達のおすすめスポットもチェックして、新しい発見を楽しもう。
+          </p>
+          <Button size="lg" asChild className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg">
+            <a href="/api/login">
+              <MapPin className="mr-2 h-5 w-5" />
+              今すぐ始める
+            </a>
+          </Button>
+        </section>
+
+        {/* 機能紹介セクション */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <Card className="text-center border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="mx-auto bg-blue-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                <MapPin className="h-8 w-8 text-blue-600" />
+              </div>
+              <CardTitle className="text-xl text-slate-800">スポット投稿</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600">
+                お気に入りの場所を写真と一緒に投稿。
+                地域、場所、おすすめポイントを詳しく記録できます。
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="mx-auto bg-green-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                <Users className="h-8 w-8 text-green-600" />
+              </div>
+              <CardTitle className="text-xl text-slate-800">フォロー機能</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600">
+                気になるユーザーをフォローして、
+                その人のおすすめスポットをいち早くチェック。
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="mx-auto bg-purple-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                <Heart className="h-8 w-8 text-purple-600" />
+              </div>
+              <CardTitle className="text-xl text-slate-800">発見と共有</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600">
+                新しい場所を発見して、
+                あなたの体験を多くの人と共有しましょう。
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* 使い方セクション */}
+        <section className="bg-white rounded-lg shadow-sm border border-slate-200 p-8 mb-16">
+          <h3 className="text-3xl font-bold text-slate-800 text-center mb-8">
+            使い方はとても簡単
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+                1
+              </div>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">ログイン</h4>
+              <p className="text-slate-600">
+                Google、GitHub、またはメールアドレスで
+                簡単にログインできます
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+                2
+              </div>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">投稿</h4>
+              <p className="text-slate-600">
+                お気に入りの場所を写真と一緒に投稿。
+                おすすめポイントも詳しく書きましょう
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+                3
+              </div>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">発見</h4>
+              <p className="text-slate-600">
+                他のユーザーの投稿をチェックして
+                新しいスポットを発見しよう
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA セクション */}
+        <section className="text-center bg-blue-600 text-white rounded-lg p-12">
+          <h3 className="text-3xl font-bold mb-4">
+            今すぐ始めて、素敵な場所を共有しませんか？
+          </h3>
+          <p className="text-xl text-blue-100 mb-8">
+            無料で利用できます。アカウント作成も簡単です。
+          </p>
+          <Button size="lg" variant="secondary" asChild className="bg-white text-blue-600 hover:bg-slate-50 px-8 py-4 text-lg">
+            <a href="/api/login">
+              <Star className="mr-2 h-5 w-5" />
+              無料で始める
+            </a>
+          </Button>
+        </section>
+      </main>
+
+      {/* フッター */}
+      <footer className="bg-slate-800 text-slate-300 py-8 mt-16">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <MapPin className="text-blue-400 mr-2 h-6 w-6" />
+            <span className="text-lg font-semibold">おすすめスポットログ</span>
+          </div>
+          <p className="text-sm">
+            あなたのお気に入りの場所を記録・共有するプラットフォーム
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

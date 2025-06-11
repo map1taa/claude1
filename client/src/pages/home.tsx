@@ -142,7 +142,7 @@ export default function Home() {
               </p>
             </div>
             
-            {isAuthenticated ? (
+            {!isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Button asChild variant="outline">
                   <a href="/api/login">ログイン</a>
