@@ -232,71 +232,249 @@ export default function Home() {
           {/* List Creation and Place Addition - First Column on PC */}
           <div className="lg:col-span-1 lg:order-1 space-y-6">
             {currentView === "list" ? (
-              <Card className="shadow-lg" style={{ border: '1.5mm solid #3e80a8' }}>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
-                  <Form {...listForm}>
-                    <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
-                      <FormField
-                        control={listForm.control}
-                        name="listName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700">リスト名</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="例：お気に入りカフェ"
-                                className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={listForm.control}
-                        name="region"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700">地域</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <>
+                <Card className="shadow-lg" style={{ border: '1.5mm solid #3e80a8' }}>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
+                    <Form {...listForm}>
+                      <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
+                        <FormField
+                          control={listForm.control}
+                          name="listName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700">リスト名</FormLabel>
                               <FormControl>
-                                <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                  <SelectValue placeholder="地域を選択" />
-                                </SelectTrigger>
+                                <Input
+                                  placeholder="例：お気に入りカフェ"
+                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  {...field}
+                                />
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="全国">全国</SelectItem>
-                                <SelectItem value="北海道">北海道</SelectItem>
-                                <SelectItem value="東北">東北</SelectItem>
-                                <SelectItem value="関東">関東</SelectItem>
-                                <SelectItem value="中部">中部</SelectItem>
-                                <SelectItem value="関西">関西</SelectItem>
-                                <SelectItem value="中国">中国</SelectItem>
-                                <SelectItem value="四国">四国</SelectItem>
-                                <SelectItem value="九州">九州</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <Button 
-                        type="submit" 
-                        className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
-                        style={{ backgroundColor: '#3e80a8' }}
-                        onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#2d5d7b'}
-                        onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#3e80a8'}
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={listForm.control}
+                          name="region"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700">地域</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <SelectValue placeholder="地域を選択" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="全国">全国</SelectItem>
+                                  <SelectItem value="北海道">北海道</SelectItem>
+                                  <SelectItem value="東北">東北</SelectItem>
+                                  <SelectItem value="関東">関東</SelectItem>
+                                  <SelectItem value="中部">中部</SelectItem>
+                                  <SelectItem value="関西">関西</SelectItem>
+                                  <SelectItem value="中国">中国</SelectItem>
+                                  <SelectItem value="四国">四国</SelectItem>
+                                  <SelectItem value="九州">九州</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
+                          style={{ backgroundColor: '#3e80a8' }}
+                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#2d5d7b'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#3e80a8'}
+                        >
+                          リストを作成
+                        </Button>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+                
+                {/* Created Lists Section */}
+                <Card className="shadow-sm">
+                  <CardContent className="p-6">
+                    <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                      <List className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
+                      作成済みリスト一覧
+                    </h4>
+                    <div className="space-y-2">
+                      {spots.length === 0 ? (
+                        <p className="text-slate-500 text-sm">まだリストがありません</p>
+                      ) : (
+                        <>
+                          {Object.entries(
+                            spots.reduce((acc, spot) => {
+                              const key = `${spot.listName}-${spot.region}`;
+                              if (!acc[key]) {
+                                acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
+                              }
+                              acc[key].count++;
+                              return acc;
+                            }, {} as Record<string, { listName: string; region: string; count: number }>)
+                          ).map(([key, list]) => (
+                            <div key={key} className="flex justify-between items-center p-2 bg-slate-50 rounded">
+                              <div>
+                                <p className="font-medium text-slate-700">{list.listName}</p>
+                                <p className="text-sm text-slate-500">{list.region}</p>
+                              </div>
+                              <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                                {list.count}件
+                              </span>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <>
+                <Card className="shadow-lg" style={{ border: '1.5mm solid #3e80a8' }}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-slate-800 flex items-center">
+                        <Plus className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
+                        場所を追加
+                      </h3>
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentView("list")}
+                        className="text-sm flex items-center"
                       >
-                        リストを作成
+                        <ArrowLeft className="mr-1 h-4 w-4" />
+                        リスト作成に戻る
                       </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
+                    </div>
+
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                        <FormField
+                          control={form.control}
+                          name="placeName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700 flex items-center">
+                                <MapPin className="text-slate-400 mr-1 h-4 w-4" />
+                                場所名
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="例：スターバックス コーヒー 渋谷店"
+                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700 flex items-center">
+                                <Globe className="text-slate-400 mr-1 h-4 w-4" />
+                                URL
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="例：https://example.com"
+                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="comment"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700 flex items-center">
+                                <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
+                                コメント
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="この場所についてのコメントを入力..."
+                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
+                          style={{ backgroundColor: '#3e80a8' }}
+                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#2d5d7b'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#3e80a8'}
+                          disabled={createSpotMutation.isPending}
+                        >
+                          {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+                
+                {/* Spots List Section for Place Addition Page */}
+                <Card className="shadow-sm">
+                  <CardContent className="p-6">
+                    <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
+                      場所一覧
+                    </h4>
+                    <div className="space-y-3">
+                      {spots.length === 0 ? (
+                        <p className="text-slate-500 text-sm">まだ場所が登録されていません</p>
+                      ) : (
+                        <>
+                          {spots.slice(0, 5).map((spot) => (
+                            <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#3e80a8' }}>
+                              <h5 className="font-medium text-slate-800">{spot.placeName}</h5>
+                              <p className="text-sm text-slate-600 mt-1">{spot.comment}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                                  {spot.listName}
+                                </span>
+                                <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                                  {spot.region}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                          {spots.length > 5 && (
+                            <p className="text-sm text-slate-500 text-center">
+                              他 {spots.length - 5} 件の場所
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
             ) : (
               <Card className="shadow-lg" style={{ border: '1.5mm solid #3e80a8' }}>
                 <CardContent className="p-6">
@@ -392,6 +570,41 @@ export default function Home() {
                       </Button>
                     </form>
                   </Form>
+                </CardContent>
+              </Card>
+              
+              {/* Spots List Section for Place Addition Page */}
+              <Card className="shadow-sm">
+                <CardContent className="p-6">
+                  <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                    <MapPin className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
+                    場所一覧
+                  </h4>
+                  <div className="space-y-3">
+                    {spots.length === 0 ? (
+                      <p className="text-slate-500 text-sm">まだ場所が登録されていません</p>
+                    ) : (
+                      spots.slice(0, 5).map((spot) => (
+                        <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#3e80a8' }}>
+                          <h5 className="font-medium text-slate-800">{spot.placeName}</h5>
+                          <p className="text-sm text-slate-600 mt-1">{spot.comment}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                              {spot.listName}
+                            </span>
+                            <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                              {spot.region}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {spots.length > 5 && (
+                      <p className="text-sm text-slate-500 text-center">
+                        他 {spots.length - 5} 件の場所
+                      </p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )}
