@@ -12,6 +12,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, ilike } from "drizzle-orm";
+import { recommendationService, type RecommendationScore } from "./recommendationService";
 
 export interface IStorage {
   // User operations
@@ -37,7 +38,7 @@ export interface IStorage {
   getFollowCounts(userId: string): Promise<{ followers: number; following: number }>;
   
   // Recommendation methods
-  getPersonalizedRecommendations(userId: string, limit?: number): Promise<any[]>;
+  getPersonalizedRecommendations(userId: string, limit?: number): Promise<RecommendationScore[]>;
   recordInteraction(userId: string, spotId: number, interactionType: string): Promise<void>;
   updateUserPreferences(userId: string): Promise<void>;
 }
@@ -308,6 +309,21 @@ export class DatabaseStorage implements IStorage {
       followers: followersResult.count,
       following: followingResult.count,
     };
+  }
+
+  // Recommendation methods
+  async getPersonalizedRecommendations(userId: string, limit: number = 10): Promise<RecommendationScore[]> {
+    return await recommendationService.getPersonalizedRecommendations(userId, limit);
+  }
+
+  async recordInteraction(userId: string, spotId: number, interactionType: string): Promise<void> {
+    await recommendationService.recordInteraction(userId, spotId, interactionType);
+    // Update user preferences based on new interaction
+    await recommendationService.updateUserPreferences(userId);
+  }
+
+  async updateUserPreferences(userId: string): Promise<void> {
+    await recommendationService.updateUserPreferences(userId);
   }
 }
 

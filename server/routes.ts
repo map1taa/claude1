@@ -218,6 +218,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recommendation routes
+  app.get("/api/recommendations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const recommendations = await storage.getPersonalizedRecommendations(userId, limit);
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      res.status(500).json({ message: "Failed to fetch recommendations" });
+    }
+  });
+
+  app.post("/api/interactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spotId, interactionType } = req.body;
+      
+      if (!spotId || !interactionType) {
+        return res.status(400).json({ message: "spotId and interactionType are required" });
+      }
+      
+      await storage.recordInteraction(userId, spotId, interactionType);
+      res.status(201).json({ message: "Interaction recorded" });
+    } catch (error) {
+      console.error("Error recording interaction:", error);
+      res.status(500).json({ message: "Failed to record interaction" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

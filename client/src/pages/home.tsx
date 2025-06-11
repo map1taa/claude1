@@ -17,7 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users, ArrowLeft } from "lucide-react";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users, ArrowLeft, Star, Heart, Eye } from "lucide-react";
 import { Link } from "wouter";
 
 type FormData = {
@@ -29,6 +29,12 @@ type FormData = {
 type ListFormData = {
   listName: string;
   region: string;
+};
+
+type RecommendationScore = {
+  spot: Spot & { user: User };
+  score: number;
+  reasons: string[];
 };
 
 export default function Home() {
