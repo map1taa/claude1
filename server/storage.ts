@@ -91,11 +91,11 @@ export class DatabaseStorage implements IStorage {
       .select({
         id: spots.id,
         userId: spots.userId,
+        listName: spots.listName,
         region: spots.region,
         title: spots.title,
         location: spots.location,
         comment: spots.comment,
-
         createdAt: spots.createdAt,
         user: {
           id: users.id,
@@ -126,13 +126,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFollowingSpots(userId: string): Promise<(Spot & { user: User })[]> {
-    return await db
-      .select()
+    const result = await db
+      .select({
+        id: spots.id,
+        userId: spots.userId,
+        listName: spots.listName,
+        region: spots.region,
+        title: spots.title,
+        location: spots.location,
+        comment: spots.comment,
+        createdAt: spots.createdAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          bio: users.bio,
+          location: users.location,
+          isPublic: users.isPublic,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        }
+      })
       .from(spots)
       .innerJoin(users, eq(spots.userId, users.id))
       .innerJoin(follows, eq(follows.followingId, spots.userId))
       .where(eq(follows.followerId, userId))
       .orderBy(desc(spots.createdAt));
+    return result as (Spot & { user: User })[];
   }
 
   async createSpot(userId: string, insertSpot: InsertSpot): Promise<Spot> {
@@ -154,17 +176,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchSpotsByTag(tag: string): Promise<(Spot & { user: User })[]> {
-    return await db
-      .select()
+    const result = await db
+      .select({
+        id: spots.id,
+        userId: spots.userId,
+        listName: spots.listName,
+        region: spots.region,
+        title: spots.title,
+        location: spots.location,
+        comment: spots.comment,
+        createdAt: spots.createdAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          bio: users.bio,
+          location: users.location,
+          isPublic: users.isPublic,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        }
+      })
       .from(spots)
       .innerJoin(users, eq(spots.userId, users.id))
       .where(
         and(
-          sql`${tag} = ANY(${spots.tags})`,
+          ilike(spots.listName, `%${tag}%`),
           eq(users.isPublic, true)
         )
       )
       .orderBy(desc(spots.createdAt));
+    return result as (Spot & { user: User })[];
   }
 
   // Follow methods
