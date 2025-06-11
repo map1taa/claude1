@@ -452,11 +452,17 @@ export default function Home() {
                           </div>
                         ))}
                       </div>
-                    ) : spots.length === 0 ? (
-                      <p className="text-slate-500 text-sm">まだ場所が登録されていません</p>
+                    ) : spots.filter(spot => 
+                      spot.listName === currentList.listName && 
+                      spot.region === currentList.region
+                    ).length === 0 ? (
+                      <p className="text-slate-500 text-sm">このリストには場所が登録されていません</p>
                     ) : (
                       <div className="space-y-3">
-                        {spots.map((spot) => (
+                        {spots.filter(spot => 
+                          spot.listName === currentList.listName && 
+                          spot.region === currentList.region
+                        ).map((spot) => (
                           <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#3e80a8' }}>
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
