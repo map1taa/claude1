@@ -435,43 +435,7 @@ export default function Home() {
                     </Form>
                   </CardContent>
                 </Card>
-                
-                {/* Spots List Section for Place Addition Page */}
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#3e80a8' }} />
-                      場所一覧
-                    </h4>
-                    <div className="space-y-3">
-                      {spots.length === 0 ? (
-                        <p className="text-slate-500 text-sm">まだ場所が登録されていません</p>
-                      ) : (
-                        <>
-                          {spots.slice(0, 5).map((spot) => (
-                            <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#3e80a8' }}>
-                              <h5 className="font-medium text-slate-800">{spot.placeName}</h5>
-                              <p className="text-sm text-slate-600 mt-1">{spot.comment}</p>
-                              <div className="flex items-center gap-2 mt-2">
-                                <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
-                                  {spot.listName}
-                                </span>
-                                <span className="text-xs text-slate-500 bg-slate-200 px-2 py-1 rounded">
-                                  {spot.region}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                          {spots.length > 5 && (
-                            <p className="text-sm text-slate-500 text-center">
-                              他 {spots.length - 5} 件の場所
-                            </p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+
               </>
             )}
           </div>
