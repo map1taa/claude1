@@ -185,35 +185,21 @@ export default function Home() {
                 <p className="text-slate-600 mt-1">お気に入りの場所を記録しよう</p>
                 
                 {/* Navigation Buttons */}
-                <div className="flex space-x-3 mt-4">
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center"
-                    style={{ borderColor: '#e34902', color: '#e34902' }}
+                <div className="flex justify-between items-center mt-4 w-full max-w-md">
+                  <button 
+                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors cursor-pointer"
                     onClick={() => setCurrentView("list")}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
                     リスト作成
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center"
-                    style={{ borderColor: '#e34902', color: '#e34902' }}
+                  </button>
+                  <button 
+                    className="text-slate-600 hover:text-slate-800 font-medium transition-colors cursor-pointer"
                   >
-                    <List className="mr-2 h-4 w-4" />
                     リスト一覧
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center"
-                    style={{ borderColor: '#e34902', color: '#e34902' }}
-                    asChild
-                  >
-                    <Link href="/profile">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      プロフィール
-                    </Link>
-                  </Button>
+                  </button>
+                  <Link href="/profile" className="text-slate-600 hover:text-slate-800 font-medium transition-colors">
+                    プロフィール
+                  </Link>
                 </div>
               </div>
             </div>
