@@ -164,18 +164,18 @@ export default function Home() {
                     variant="outline" 
                     className="flex items-center"
                     style={{ borderColor: '#3e80a8', color: '#3e80a8' }}
+                    onClick={() => setCurrentView("list")}
                   >
-                    <List className="mr-2 h-4 w-4" />
-                    リスト一覧
+                    <Plus className="mr-2 h-4 w-4" />
+                    リスト作成
                   </Button>
                   <Button 
                     variant="outline" 
                     className="flex items-center"
                     style={{ borderColor: '#3e80a8', color: '#3e80a8' }}
-                    onClick={() => setCurrentView("list")}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    リスト作成
+                    <List className="mr-2 h-4 w-4" />
+                    リスト一覧
                   </Button>
                   <Button 
                     variant="outline" 
