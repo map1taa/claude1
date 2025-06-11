@@ -224,169 +224,170 @@ export default function Home() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Tabbed Interface */}
-          <div className="lg:col-span-1">
+          {/* List Creation and Place Addition */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* List Creation Section */}
             <Card className="shadow-lg border-0">
               <CardContent className="p-6">
-                <Tabs defaultValue="list-creation" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="list-creation">リスト作成</TabsTrigger>
-                    <TabsTrigger value="add-item">場所を追加</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="list-creation" className="space-y-6">
-                    <h3 className="text-lg font-semibold text-slate-800">リスト設定</h3>
-                    <Form {...listForm}>
-                      <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
-                        <FormField
-                          control={listForm.control}
-                          name="listName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700">リスト名</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="例：お気に入りカフェ"
-                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={listForm.control}
-                          name="region"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700">地域</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <SelectValue placeholder="地域を選択" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="全国">全国</SelectItem>
-                                  <SelectItem value="北海道">北海道</SelectItem>
-                                  <SelectItem value="東北">東北</SelectItem>
-                                  <SelectItem value="関東">関東</SelectItem>
-                                  <SelectItem value="中部">中部</SelectItem>
-                                  <SelectItem value="関西">関西</SelectItem>
-                                  <SelectItem value="中国">中国</SelectItem>
-                                  <SelectItem value="四国">四国</SelectItem>
-                                  <SelectItem value="九州">九州</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors"
-                        >
-                          リストを作成
-                        </Button>
-                      </form>
-                    </Form>
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
+                <Form {...listForm}>
+                  <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
+                    <FormField
+                      control={listForm.control}
+                      name="listName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700">リスト名</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：お気に入りカフェ"
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     
-                    <div className="bg-slate-100 p-4 rounded-lg">
-                      <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
-                      <p className="text-sm text-slate-600">
-                        名前: {currentList.listName}<br />
-                        地域: {currentList.region}<br />
-                        登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
-                      </p>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="add-item" className="space-y-6">
-                    <h3 className="text-lg font-semibold text-slate-800 flex items-center">
-                      <Plus className="text-blue-600 mr-2 h-5 w-5" />
-                      場所を追加
-                    </h3>
+                    <FormField
+                      control={listForm.control}
+                      name="region"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700">地域</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <SelectValue placeholder="地域を選択" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="全国">全国</SelectItem>
+                              <SelectItem value="北海道">北海道</SelectItem>
+                              <SelectItem value="東北">東北</SelectItem>
+                              <SelectItem value="関東">関東</SelectItem>
+                              <SelectItem value="中部">中部</SelectItem>
+                              <SelectItem value="関西">関西</SelectItem>
+                              <SelectItem value="中国">中国</SelectItem>
+                              <SelectItem value="四国">四国</SelectItem>
+                              <SelectItem value="九州">九州</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                        <FormField
-                          control={form.control}
-                          name="placeName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 flex items-center">
-                                <MapPin className="text-slate-400 mr-1 h-4 w-4" />
-                                場所名
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="例：スターバックス コーヒー 渋谷店"
-                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                    <Button 
+                      type="submit" 
+                      className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
+                      style={{ backgroundColor: '#3e80a8' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#2d5d7b'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#3e80a8'}
+                    >
+                      リストを作成
+                    </Button>
+                  </form>
+                </Form>
+                
+                <div className="bg-slate-100 p-4 rounded-lg mt-4">
+                  <h4 className="font-medium text-slate-700 mb-2">現在のリスト</h4>
+                  <p className="text-sm text-slate-600">
+                    名前: {currentList.listName}<br />
+                    地域: {currentList.region}<br />
+                    登録済み場所: {spots.filter(spot => spot.listName === currentList.listName).length}件
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-                        <FormField
-                          control={form.control}
-                          name="url"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 flex items-center">
-                                <Globe className="text-slate-400 mr-1 h-4 w-4" />
-                                URL
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="例：https://..."
-                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+            {/* Place Addition Section */}
+            <Card className="shadow-lg border-0">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                  <Plus className="text-[#3e80a8] mr-2 h-5 w-5" />
+                  場所を追加
+                </h3>
+                
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="placeName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <MapPin className="text-slate-400 mr-1 h-4 w-4" />
+                            場所名
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：スターバックス コーヒー 渋谷店"
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                        <FormField
-                          control={form.control}
-                          name="comment"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 flex items-center">
-                                <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
-                                コメント
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="このスポットについて詳しく教えてください..."
-                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-20"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                    <FormField
+                      control={form.control}
+                      name="url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <Globe className="text-slate-400 mr-1 h-4 w-4" />
+                            URL
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：https://..."
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                        <Button
-                          type="submit"
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3"
-                          disabled={createSpotMutation.isPending}
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
-                        </Button>
-                      </form>
-                    </Form>
-                  </TabsContent>
-                </Tabs>
+                    <FormField
+                      control={form.control}
+                      name="comment"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
+                            コメント
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="このスポットについて詳しく教えてください..."
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-20"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button
+                      type="submit"
+                      className="w-full text-white font-medium py-3"
+                      style={{ backgroundColor: '#3e80a8' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#2d5d7b'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#3e80a8'}
+                      disabled={createSpotMutation.isPending}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
+                    </Button>
+                  </form>
+                </Form>
               </CardContent>
             </Card>
           </div>
