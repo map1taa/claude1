@@ -20,23 +20,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Search, Tag, Globe, User as UserIcon, LogOut, Settings } from "lucide-react";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings } from "lucide-react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [searchTag, setSearchTag] = useState("");
-  const [displayedSpots, setDisplayedSpots] = useState<(Spot & { user: User })[]>([]);
-
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
     queryKey: ["/api/spots"],
   });
-
-  // Update displayed spots when data changes
-  useEffect(() => {
-    setDisplayedSpots(spots);
-  }, [spots]);
 
   // Form setup
   const form = useForm<FormData>({
@@ -101,31 +93,7 @@ export default function Home() {
     deleteSpotMutation.mutate(id);
   };
 
-  const handleSearch = async () => {
-    if (!searchTag.trim()) {
-      setDisplayedSpots(spots);
-      return;
-    }
 
-    try {
-      const response = await fetch(`/api/spots/search?tag=${encodeURIComponent(searchTag.trim())}`);
-      if (response.ok) {
-        const searchResults = await response.json();
-        setDisplayedSpots(searchResults);
-      }
-    } catch (error) {
-      toast({
-        title: "検索エラー",
-        description: "タグ検索に失敗しました。",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const resetSearch = () => {
-    setSearchTag("");
-    setDisplayedSpots(spots);
-  };
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -312,10 +280,10 @@ export default function Home() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-slate-800 flex items-center">
                 <List className="text-blue-600 mr-2 h-6 w-6" />
-                投稿されたスポット
+                投稿されたリスト
               </h2>
               <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {displayedSpots.length} 件のスポット
+                {displayedSpots.length} 件のリスト
               </div>
             </div>
 
@@ -367,7 +335,14 @@ export default function Home() {
 
                       <div className="flex items-center text-slate-600 mb-3">
                         <MapPin className="text-blue-500 mr-2 h-4 w-4" />
-                        <span className="font-medium">{spot.location}</span>
+                        <a 
+                          href={spot.location} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {spot.location}
+                        </a>
                       </div>
 
                       <p className="text-slate-700 leading-relaxed mb-4">
