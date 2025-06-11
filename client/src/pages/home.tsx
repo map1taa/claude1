@@ -189,7 +189,7 @@ export default function Home() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
                   <Plus className="text-blue-600 mr-2 h-5 w-5" />
-                  新しいスポットを追加
+                  リストを追加
                 </h2>
 
                 <Form {...form}>
@@ -210,6 +210,7 @@ export default function Home() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="全国">全国</SelectItem>
                               <SelectItem value="北海道">北海道</SelectItem>
                               <SelectItem value="東北">東北</SelectItem>
                               <SelectItem value="関東">関東</SelectItem>
@@ -233,11 +234,11 @@ export default function Home() {
                         <FormItem>
                           <FormLabel className="text-slate-700 flex items-center">
                             <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
-                            タイトル
+                            店名
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="例：美味しいラーメン店"
+                              placeholder="例：〇〇ラーメン"
                               className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               {...field}
                             />
@@ -254,11 +255,11 @@ export default function Home() {
                         <FormItem>
                           <FormLabel className="text-slate-700 flex items-center">
                             <MapPin className="text-slate-400 mr-1 h-4 w-4" />
-                            場所
+                            URL
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="例：東京都渋谷区"
+                              placeholder="例：https://example.com"
                               className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               {...field}
                             />
@@ -275,11 +276,11 @@ export default function Home() {
                         <FormItem>
                           <FormLabel className="text-slate-700 flex items-center">
                             <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
-                            おすすめ理由
+                            コメント
                           </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="このスポットをおすすめする理由を教えてください..."
+                              placeholder="コメントを入力してください..."
                               rows={4}
                               className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                               {...field}
@@ -298,7 +299,7 @@ export default function Home() {
                       disabled={createSpotMutation.isPending}
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      {createSpotMutation.isPending ? "追加中..." : "スポットを追加"}
+                      {createSpotMutation.isPending ? "追加中..." : "リストを追加"}
                     </Button>
                   </form>
                 </Form>
@@ -318,36 +319,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Search Bar */}
-            <Card className="mb-6">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="タグで検索..."
-                      value={searchTag}
-                      onChange={(e) => setSearchTag(e.target.value)}
-                      className="border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleSearch}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-                  >
-                    <Search className="mr-2 h-4 w-4" />
-                    検索
-                  </Button>
-                  <Button
-                    onClick={resetSearch}
-                    variant="outline"
-                    className="border-slate-300 text-slate-600 hover:bg-slate-50"
-                  >
-                    リセット
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {isLoading ? (
               <div className="space-y-4">
@@ -366,10 +338,10 @@ export default function Home() {
                 <CardContent className="text-center py-12">
                   <MapPin className="text-slate-300 h-16 w-16 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-slate-600 mb-2">
-                    {searchTag ? "検索結果が見つかりませんでした" : "まだスポットが投稿されていません"}
+                    まだリストが投稿されていません
                   </h3>
                   <p className="text-slate-500">
-                    {searchTag ? "別のタグで検索してみてください" : "左のフォームから最初のスポットを追加してみましょう！"}
+                    左のフォームから最初のリストを追加してみましょう！
                   </p>
                 </CardContent>
               </Card>
