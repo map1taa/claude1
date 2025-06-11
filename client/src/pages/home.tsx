@@ -1,30 +1,33 @@
-import { useState, useEffect } from "react";
-import { Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertSpotSchema, type Spot, type InsertSpot, type User } from "@shared/schema";
-import { z } from "zod";
-
-type FormData = z.infer<typeof insertSpotSchema>;
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { insertSpotSchema, type InsertSpot, type Spot, type User } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users } from "lucide-react";
+import { Link } from "wouter";
+
+type FormData = {
+  placeName: string;
+  url: string;
+  comment: string;
+};
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
     queryKey: ["/api/spots"],
@@ -43,16 +46,15 @@ export default function Home() {
   // Create spot mutation
   const createSpotMutation = useMutation({
     mutationFn: async (data: InsertSpot) => {
-      const response = await apiRequest("POST", "/api/spots", data);
-      return response.json();
+      await apiRequest("POST", "/api/spots", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
-      form.reset();
       toast({
         title: "スポットが追加されました",
         description: "新しいスポットが正常に追加されました！",
       });
+      form.reset();
     },
     onError: () => {
       toast({
@@ -85,22 +87,12 @@ export default function Home() {
   });
 
   const onSubmit = (data: FormData) => {
-    createSpotMutation.mutate(data as any, {
-      onSuccess: () => {
-        form.reset({
-          placeName: "",
-          url: "",
-          comment: "",
-        });
-      },
-    });
+    createSpotMutation.mutate(data as InsertSpot);
   };
 
   const handleDelete = (id: number) => {
     deleteSpotMutation.mutate(id);
   };
-
-
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -144,47 +136,50 @@ export default function Home() {
             
             {!isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <Button asChild variant="outline">
+                <Button asChild>
                   <a href="/api/login">ログイン</a>
                 </Button>
               </div>
             ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
-                      <AvatarFallback>
-                        {(user as any)?.firstName?.charAt(0) || (user as any)?.email?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center cursor-pointer">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      <span>プロフィール</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="/api/logout" className="flex items-center cursor-pointer">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>ログアウト</span>
-                    </a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center space-x-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.profileImageUrl || ""} alt={user?.firstName || ""} />
+                        <AvatarFallback>
+                          {user?.firstName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">
+                        <Settings className="mr-2 h-4 w-4" />
+                        プロフィール設定
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="/api/logout">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        ログアウト
+                      </a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Form Section */}
+          {/* Add Spot Form */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-8 shadow-lg">
+            <Card className="shadow-lg border-0">
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
                   <Plus className="text-blue-600 mr-2 h-5 w-5" />
@@ -195,91 +190,37 @@ export default function Home() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <FormField
                       control={form.control}
-                      name="listName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 flex items-center">
-                            <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
-                            リスト名
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="例：お気に入りカフェ"
-                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="region"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 flex items-center">
-                            <Globe className="text-slate-400 mr-1 h-4 w-4" />
-                            地域
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="地域を選択してください" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="全国">全国</SelectItem>
-                              <SelectItem value="北海道">北海道</SelectItem>
-                              <SelectItem value="東北">東北</SelectItem>
-                              <SelectItem value="関東">関東</SelectItem>
-                              <SelectItem value="中部">中部</SelectItem>
-                              <SelectItem value="近畿">近畿</SelectItem>
-                              <SelectItem value="中国">中国</SelectItem>
-                              <SelectItem value="四国">四国</SelectItem>
-                              <SelectItem value="九州・沖縄">九州・沖縄</SelectItem>
-                              <SelectItem value="海外">海外</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 flex items-center">
-                            <MessageCircle className="text-slate-400 mr-1 h-4 w-4" />
-                            店名
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="例：〇〇ラーメン"
-                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="location"
+                      name="placeName"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-slate-700 flex items-center">
                             <MapPin className="text-slate-400 mr-1 h-4 w-4" />
+                            場所名
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="例：スターバックス コーヒー 渋谷店"
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 flex items-center">
+                            <Globe className="text-slate-400 mr-1 h-4 w-4" />
                             URL
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="例：https://example.com"
+                              placeholder="例：https://..."
                               className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               {...field}
                             />
@@ -300,9 +241,8 @@ export default function Home() {
                           </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="コメントを入力してください..."
-                              rows={4}
-                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                              placeholder="このスポットについて詳しく教えてください..."
+                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-20"
                               {...field}
                             />
                           </FormControl>
@@ -310,8 +250,6 @@ export default function Home() {
                         </FormItem>
                       )}
                     />
-
-
 
                     <Button
                       type="submit"
@@ -338,8 +276,6 @@ export default function Home() {
                 {spots.length} 件のリスト
               </div>
             </div>
-
-
 
             {isLoading ? (
               <div className="space-y-4">
@@ -378,70 +314,81 @@ export default function Home() {
                             </span>
                           </div>
                           <h3 className="text-xl font-bold text-slate-800 mb-2">
-                            {spot.title}
+                            {spot.placeName}
                           </h3>
                           <div className="flex items-center text-slate-600 mb-2">
                             <Globe className="text-green-500 mr-2 h-4 w-4" />
                             <span className="font-medium text-sm">{spot.region}</span>
                           </div>
+                          {spot.url && (
+                            <div className="flex items-center text-blue-600 mb-3">
+                              <Globe className="mr-2 h-4 w-4" />
+                              <a
+                                href={spot.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm hover:underline"
+                              >
+                                {spot.url}
+                              </a>
+                            </div>
+                          )}
                         </div>
-                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full ml-4">
-                          {spot.createdAt ? new Date(spot.createdAt).toLocaleDateString('ja-JP') : ''}
-                        </span>
+                        
+                        {user?.id === spot.userId && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>スポットを削除しますか？</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  この操作は元に戻すことができません。本当に削除しますか？
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDelete(spot.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  削除する
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
 
-                      <div className="flex items-center text-slate-600 mb-3">
-                        <MapPin className="text-blue-500 mr-2 h-4 w-4" />
-                        <a 
-                          href={spot.location} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                          {spot.location}
-                        </a>
-                      </div>
-
-                      <p className="text-slate-700 leading-relaxed mb-4">
+                      <p className="text-slate-700 mb-4 leading-relaxed">
                         {spot.comment}
                       </p>
 
+                      <Separator className="my-4" />
 
-
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                        <div className="flex items-center text-slate-500 text-sm">
-                          <Calendar className="mr-1 h-4 w-4" />
-                          投稿日: {spot.createdAt ? new Date(spot.createdAt).toLocaleDateString('ja-JP') : ''}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={spot.user.profileImageUrl || ""} />
+                            <AvatarFallback>
+                              {spot.user.firstName?.charAt(0) || spot.user.email?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">
+                              {spot.user.firstName && spot.user.lastName 
+                                ? `${spot.user.firstName} ${spot.user.lastName}`
+                                : spot.user.firstName || spot.user.email}
+                            </p>
+                          </div>
                         </div>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="mr-1 h-4 w-4" />
-                              削除
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>スポットを削除</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                このスポットを削除してもよろしいですか？この操作は取り消せません。
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(spot.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                削除
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <div className="flex items-center text-slate-500 text-xs">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          {new Date(spot.createdAt!).toLocaleDateString('ja-JP')}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -452,94 +399,50 @@ export default function Home() {
 
           {/* Profile Section */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-8 shadow-lg">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                  <UserIcon className="text-blue-600 mr-2 h-5 w-5" />
-                  プロフィール
-                </h2>
-
-                {user && (
-                  <div className="space-y-4">
-                    {/* User Avatar and Name */}
-                    <div className="text-center">
-                      <Avatar className="h-16 w-16 mx-auto mb-3">
-                        <AvatarImage src={user.profileImageUrl || undefined} />
-                        <AvatarFallback className="text-lg font-medium">
-                          {user.firstName ? user.firstName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <h3 className="font-bold text-slate-800">
-                        {user.firstName && user.lastName 
-                          ? `${user.firstName} ${user.lastName}` 
-                          : user.email || "ユーザー"}
-                      </h3>
-                      {user.email && (
-                        <p className="text-sm text-slate-600">{user.email}</p>
-                      )}
-                    </div>
-
-                    {/* Bio */}
-                    {user.bio && (
-                      <div>
-                        <h4 className="font-medium text-slate-800 mb-2">自己紹介</h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">{user.bio}</p>
-                      </div>
+            {isAuthenticated && user && (
+              <Card className="shadow-lg border-0">
+                <CardContent className="p-6">
+                  <div className="text-center mb-6">
+                    <Avatar className="h-20 w-20 mx-auto mb-4">
+                      <AvatarImage src={user.profileImageUrl || ""} />
+                      <AvatarFallback className="text-lg">
+                        {user.firstName?.charAt(0) || user.email?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h3 className="text-lg font-bold text-slate-800">
+                      {user.firstName && user.lastName 
+                        ? `${user.firstName} ${user.lastName}`
+                        : user.firstName || user.email}
+                    </h3>
+                    {user.email && (
+                      <p className="text-sm text-slate-500">{user.email}</p>
                     )}
+                  </div>
 
-                    {/* User Stats */}
-                    <div className="bg-slate-50 p-4 rounded-lg">
-                      <div className="grid grid-cols-1 gap-3 text-center">
-                        <div>
-                          <div className="text-xl font-bold text-blue-600">{spots.filter(spot => spot.user.id === user.id).length}</div>
-                          <div className="text-xs text-slate-600">投稿したリスト</div>
+                  {user.bio && (
+                    <div className="mb-6">
+                      <p className="text-sm text-slate-600">{user.bio}</p>
+                    </div>
+                  )}
+
+                  <Separator className="my-4" />
+
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <h4 className="text-sm font-semibold text-slate-700 mb-2">最近の投稿</h4>
+                      {spots.filter(spot => spot.user.id === user.id).slice(0, 3).map(spot => (
+                        <div key={spot.id} className="text-xs text-slate-500 mb-1">
+                          {spot.placeName}
                         </div>
-                      </div>
-                    </div>
-
-                    {/* User's Recent Posts */}
-                    <div>
-                      <h4 className="font-medium text-slate-800 mb-3">最近の投稿</h4>
-                      <div className="space-y-2">
-                        {spots.filter(spot => spot.user.id === user.id).slice(0, 3).map((spot) => (
-                          <div key={spot.id} className="bg-slate-50 p-3 rounded border">
-                            <h5 className="font-medium text-sm text-slate-800 mb-1">{spot.title}</h5>
-                            <div className="flex items-center text-xs text-slate-600 mb-1">
-                              <Globe className="text-green-500 mr-1 h-3 w-3" />
-                              <span>{spot.region}</span>
-                            </div>
-                            <p className="text-xs text-slate-600 line-clamp-2">{spot.comment}</p>
-                          </div>
-                        ))}
-                        {spots.filter(spot => spot.user.id === user.id).length === 0 && (
-                          <p className="text-xs text-slate-500 text-center py-4">まだ投稿がありません</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Profile Link */}
-                    <div className="pt-4 border-t border-slate-200">
-                      <Button asChild variant="outline" className="w-full">
-                        <Link href="/profile">
-                          <Settings className="mr-2 h-4 w-4" />
-                          プロフィール設定
-                        </Link>
-                      </Button>
+                      ))}
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-16">
-        <div className="container mx-auto px-4 py-8 text-center text-slate-600">
-          <p>&copy; 2024 おすすめスポットログ. All rights reserved.</p>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }

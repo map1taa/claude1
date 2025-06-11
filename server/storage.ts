@@ -93,8 +93,8 @@ export class DatabaseStorage implements IStorage {
         userId: spots.userId,
         listName: spots.listName,
         region: spots.region,
-        title: spots.title,
-        location: spots.location,
+        placeName: spots.placeName,
+        url: spots.url,
         comment: spots.comment,
         createdAt: spots.createdAt,
         user: {
@@ -132,8 +132,8 @@ export class DatabaseStorage implements IStorage {
         userId: spots.userId,
         listName: spots.listName,
         region: spots.region,
-        title: spots.title,
-        location: spots.location,
+        placeName: spots.placeName,
+        url: spots.url,
         comment: spots.comment,
         createdAt: spots.createdAt,
         user: {
