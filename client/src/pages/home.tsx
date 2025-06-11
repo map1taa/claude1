@@ -49,6 +49,12 @@ export default function Home() {
     queryKey: ["/api/spots"],
   });
 
+  // Fetch recommendations
+  const { data: recommendations = [], isLoading: isLoadingRecommendations } = useQuery<RecommendationScore[]>({
+    queryKey: ["/api/recommendations"],
+    enabled: isAuthenticated,
+  });
+
   // Form setup for spot creation
   const form = useForm<FormData>({
     resolver: zodResolver(insertSpotSchema.pick({ placeName: true, url: true, comment: true })),
@@ -116,6 +122,16 @@ export default function Home() {
     },
   });
 
+  // Record interaction mutation
+  const recordInteractionMutation = useMutation({
+    mutationFn: async ({ spotId, interactionType }: { spotId: number; interactionType: string }) => {
+      await apiRequest("POST", "/api/interactions", { spotId, interactionType });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/recommendations"] });
+    },
+  });
+
   const onSubmit = (data: FormData) => {
     const spotData = {
       ...data,
@@ -137,6 +153,10 @@ export default function Home() {
 
   const handleDelete = (id: number) => {
     deleteSpotMutation.mutate(id);
+  };
+
+  const handleInteraction = (spotId: number, interactionType: string) => {
+    recordInteractionMutation.mutate({ spotId, interactionType });
   };
 
   return (
@@ -523,9 +543,86 @@ export default function Home() {
 
 
 
-          {/* Profile Section - Second Column on PC */}
+          {/* Recommendations and Profile Section - Second Column on PC */}
           <div className="lg:col-span-1 lg:order-2">
-            <div className="sticky top-8">
+            <div className="sticky top-8 space-y-6">
+              {/* Personalized Recommendations */}
+              {isAuthenticated && (
+                <Card className="shadow-sm">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                      <Star className="mr-2 h-5 w-5" style={{ color: '#e34902' }} />
+                      おすすめスポット
+                    </h3>
+                    
+                    {isLoadingRecommendations ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-slate-200 rounded w-1/2 mb-1"></div>
+                            <div className="h-2 bg-slate-200 rounded w-full"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : recommendations.length === 0 ? (
+                      <p className="text-slate-500 text-sm">
+                        まだおすすめがありません。スポットを閲覧して好みを学習させましょう！
+                      </p>
+                    ) : (
+                      <div className="space-y-4">
+                        {recommendations.slice(0, 3).map((rec) => (
+                          <div key={rec.spot.id} className="border-l-4 border-orange-500 pl-3">
+                            <h4 className="font-medium text-slate-800 text-sm">
+                              {rec.spot.placeName || 'スポット'}
+                            </h4>
+                            <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                              {rec.spot.comment}
+                            </p>
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center space-x-1">
+                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                                  スコア: {rec.score}
+                                </span>
+                              </div>
+                              <div className="flex space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleInteraction(rec.spot.id, 'view')}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleInteraction(rec.spot.id, 'like')}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Heart className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            {rec.reasons.length > 0 && (
+                              <p className="text-xs text-slate-500 mt-1">
+                                理由: {rec.reasons[0]}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                        {recommendations.length > 3 && (
+                          <p className="text-xs text-slate-500 text-center mt-2">
+                            他 {recommendations.length - 3} 件のおすすめ
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* User Profile Section */}
               <Card className="shadow-sm">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
