@@ -166,14 +166,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/spots", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Creating spot for user:", userId);
+      console.log("Request body:", req.body);
+      
       const validatedData = insertSpotSchema.parse(req.body);
+      console.log("Validated data:", validatedData);
+      
       const spot = await storage.createSpot(userId, validatedData);
+      console.log("Created spot:", spot);
       res.status(201).json(spot);
     } catch (error) {
+      console.error("Error creating spot:", error);
       if (error instanceof Error && error.name === 'ZodError') {
-        res.status(400).json({ message: "Invalid data provided" });
+        res.status(400).json({ message: "Invalid data provided", error: error.message });
       } else {
-        res.status(500).json({ message: "Failed to create spot" });
+        res.status(500).json({ message: "Failed to create spot", error: error instanceof Error ? error.message : 'Unknown error' });
       }
     }
   });

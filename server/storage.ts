@@ -11,7 +11,7 @@ import {
   type UpdateProfile,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql } from "drizzle-orm";
+import { eq, desc, and, or, sql, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -182,8 +182,8 @@ export class DatabaseStorage implements IStorage {
         userId: spots.userId,
         listName: spots.listName,
         region: spots.region,
-        title: spots.title,
-        location: spots.location,
+        placeName: spots.placeName,
+        url: spots.url,
         comment: spots.comment,
         createdAt: spots.createdAt,
         user: {
@@ -203,7 +203,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(spots.userId, users.id))
       .where(
         and(
-          ilike(spots.listName, `%${tag}%`),
+          sql`${spots.listName} ILIKE ${`%${tag}%`}`,
           eq(users.isPublic, true)
         )
       )
