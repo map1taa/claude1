@@ -12,7 +12,7 @@ export default function Landing() {
             <div className="flex items-center">
               <MapPin className="text-blue-600 mr-3 h-8 w-8" />
               <h1 className="text-3xl font-bold text-slate-800">
-                おすすめスポットログ
+                あしあと
               </h1>
             </div>
             <Button asChild>
@@ -155,7 +155,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center mb-4">
             <MapPin className="text-blue-400 mr-2 h-6 w-6" />
-            <span className="text-lg font-semibold">おすすめスポットログ</span>
+            <span className="text-lg font-semibold">あしあと</span>
           </div>
           <p className="text-sm">
             あなたのお気に入りの場所を記録・共有するプラットフォーム

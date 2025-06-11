@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Search, Tag, Globe, User as UserIcon, LogOut, Settings } from "lucide-react";
@@ -135,7 +136,7 @@ export default function Home() {
             <div>
               <h1 className="text-3xl font-bold text-slate-800 flex items-center">
                 <MapPin className="text-blue-600 mr-3 h-8 w-8" />
-                おすすめスポットログ
+                あしあと
               </h1>
               <p className="text-slate-600 mt-2">
                 あなたのお気に入りの場所を記録・共有しましょう
@@ -202,13 +203,24 @@ export default function Home() {
                             <Globe className="text-slate-400 mr-1 h-4 w-4" />
                             地域
                           </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="例：関東地方"
-                              className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              {...field}
-                            />
-                          </FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <SelectValue placeholder="地域を選択してください" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="北海道">北海道</SelectItem>
+                              <SelectItem value="東北">東北</SelectItem>
+                              <SelectItem value="関東">関東</SelectItem>
+                              <SelectItem value="中部">中部</SelectItem>
+                              <SelectItem value="近畿">近畿</SelectItem>
+                              <SelectItem value="中国">中国</SelectItem>
+                              <SelectItem value="四国">四国</SelectItem>
+                              <SelectItem value="九州・沖縄">九州・沖縄</SelectItem>
+                              <SelectItem value="海外">海外</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
