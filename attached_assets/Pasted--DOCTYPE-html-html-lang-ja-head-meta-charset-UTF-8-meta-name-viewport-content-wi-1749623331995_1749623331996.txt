@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>おすすめスポットログ</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; }
+    .spot-card { border: 1px solid #ccc; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
+    .spot-card h3 { margin: 0 0 0.5em 0; }
+    .form-group { margin-bottom: 1em; }
+    label { display: block; margin-bottom: 0.2em; }
+    input, textarea { width: 100%; padding: 0.5em; }
+    button { padding: 0.5em 1em; }
+  </style>
+</head>
+<body>
+  <h1>おすすめスポットログ</h1>
+
+  <div>
+    <h2>スポット追加</h2>
+    <div class="form-group">
+      <label for="title">タイトル</label>
+      <input type="text" id="title">
+    </div>
+    <div class="form-group">
+      <label for="comment">コメント</label>
+      <textarea id="comment" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="location">場所</label>
+      <input type="text" id="location">
+    </div>
+    <button onclick="addSpot()">追加</button>
+  </div>
+
+  <hr>
+  <h2>投稿されたスポット</h2>
+  <div id="spots"></div>
+
+  <script>
+    const spots = [];
+
+    function addSpot() {
+      const title = document.getElementById('title').value;
+      const comment = document.getElementById('comment').value;
+      const location = document.getElementById('location').value;
+
+      if (title && comment && location) {
+        const newSpot = { title, comment, location };
+        spots.push(newSpot);
+        displaySpots();
+
+        document.getElementById('title').value = '';
+        document.getElementById('comment').value = '';
+        document.getElementById('location').value = '';
+      }
+    }
+
+    function displaySpots() {
+      const spotContainer = document.getElementById('spots');
+      spotContainer.innerHTML = '';
+      spots.forEach((spot, index) => {
+        const div = document.createElement('div');
+        div.className = 'spot-card';
+        div.innerHTML = `<h3>${spot.title}</h3><p><strong>場所:</strong> ${spot.location}</p><p>${spot.comment}</p>`;
+        spotContainer.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
