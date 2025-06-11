@@ -405,16 +405,7 @@ export default function Profile() {
 
                           <p className="text-slate-700 mb-3">{spot.comment}</p>
 
-                          {spot.tags && spot.tags.length > 0 && (
-                            <div className="flex items-center flex-wrap gap-2">
-                              <Tag className="text-slate-400 h-4 w-4" />
-                              {spot.tags.map((tag, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
+
                         </CardContent>
                       </Card>
                     ))}

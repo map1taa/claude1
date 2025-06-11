@@ -390,17 +390,7 @@ export default function Home() {
                         {spot.comment}
                       </p>
 
-                      {/* Tags */}
-                      {spot.tags && spot.tags.length > 0 && (
-                        <div className="flex items-center flex-wrap gap-2 mb-4">
-                          <Tag className="text-slate-400 h-4 w-4" />
-                          {spot.tags.map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+
 
                       <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                         <div className="flex items-center text-slate-500 text-sm">

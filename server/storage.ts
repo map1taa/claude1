@@ -95,7 +95,7 @@ export class DatabaseStorage implements IStorage {
         title: spots.title,
         location: spots.location,
         comment: spots.comment,
-        tags: spots.tags,
+
         createdAt: spots.createdAt,
         user: {
           id: users.id,
