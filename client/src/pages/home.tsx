@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertSpotSchema, type Spot, type InsertSpot } from "@shared/schema";
+import { insertSpotSchema, type Spot, type InsertSpot, type User } from "@shared/schema";
 import { z } from "zod";
 
 // Form type for handling string tags input
@@ -11,23 +12,27 @@ const formSchema = insertSpotSchema.extend({
 });
 type FormData = z.infer<typeof formSchema>;
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Search, Tag, Globe } from "lucide-react";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Search, Tag, Globe, User as UserIcon, LogOut, Settings } from "lucide-react";
 
 export default function Home() {
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [searchTag, setSearchTag] = useState("");
-  const [displayedSpots, setDisplayedSpots] = useState<Spot[]>([]);
+  const [displayedSpots, setDisplayedSpots] = useState<(Spot & { user: User })[]>([]);
 
   // Fetch spots
-  const { data: spots = [], isLoading } = useQuery<Spot[]>({
+  const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
     queryKey: ["/api/spots"],
   });
 
@@ -131,13 +136,52 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-slate-800 text-center md:text-left flex items-center justify-center md:justify-start">
-            <MapPin className="text-blue-600 mr-3 h-8 w-8" />
-            おすすめスポットログ
-          </h1>
-          <p className="text-slate-600 mt-2 text-center md:text-left">
-            あなたのお気に入りの場所を記録・共有しましょう
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800 flex items-center">
+                <MapPin className="text-blue-600 mr-3 h-8 w-8" />
+                おすすめスポットログ
+              </h1>
+              <p className="text-slate-600 mt-2">
+                あなたのお気に入りの場所を記録・共有しましょう
+              </p>
+            </div>
+            
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <Button asChild variant="outline">
+                  <a href="/api/login">ログイン</a>
+                </Button>
+              </div>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
+                      <AvatarFallback>
+                        {(user as any)?.firstName?.charAt(0) || (user as any)?.email?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center cursor-pointer">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>プロフィール</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a href="/api/logout" className="flex items-center cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>ログアウト</span>
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </header>
 
@@ -358,7 +402,7 @@ export default function Home() {
                           </div>
                         </div>
                         <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full ml-4">
-                          {spot.createdAt}
+                          {spot.createdAt ? new Date(spot.createdAt).toLocaleDateString('ja-JP') : ''}
                         </span>
                       </div>
 
@@ -386,7 +430,7 @@ export default function Home() {
                       <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                         <div className="flex items-center text-slate-500 text-sm">
                           <Calendar className="mr-1 h-4 w-4" />
-                          投稿日: {spot.createdAt}
+                          投稿日: {spot.createdAt ? new Date(spot.createdAt).toLocaleDateString('ja-JP') : ''}
                         </div>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
