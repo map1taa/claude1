@@ -79,6 +79,22 @@ export default function Home() {
     region: "全国",
   });
 
+  // Region selection state
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [selectedPrefecture, setSelectedPrefecture] = useState<string>("");
+
+  // Region and prefecture data
+  const regionData = {
+    "北海道": ["北海道"],
+    "東北": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
+    "関東": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
+    "中部": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],
+    "関西": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
+    "中国": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],
+    "四国": ["徳島県", "香川県", "愛媛県", "高知県"],
+    "九州・沖縄": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]
+  };
+
   // Create spot mutation
   const createSpotMutation = useMutation({
     mutationFn: async (data: InsertSpot) => {
@@ -268,34 +284,47 @@ export default function Home() {
                           )}
                         />
                         
-                        <FormField
-                          control={listForm.control}
-                          name="region"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700">地域</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <SelectValue placeholder="地域を選択" />
-                                  </SelectTrigger>
-                                </FormControl>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-slate-700 text-sm font-medium">地域</label>
+                            <Select onValueChange={(value) => {
+                              setSelectedRegion(value);
+                              setSelectedPrefecture("");
+                              if (value === "全国") {
+                                listForm.setValue("region", "全国");
+                              }
+                            }} defaultValue={selectedRegion}>
+                              <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <SelectValue placeholder="地域を選択" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="全国">全国</SelectItem>
+                                {Object.keys(regionData).map((region) => (
+                                  <SelectItem key={region} value={region}>{region}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          {selectedRegion && selectedRegion !== "全国" && (
+                            <div>
+                              <label className="text-slate-700 text-sm font-medium">都道府県</label>
+                              <Select onValueChange={(value) => {
+                                setSelectedPrefecture(value);
+                                listForm.setValue("region", value);
+                              }} value={selectedPrefecture}>
+                                <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                  <SelectValue placeholder="都道府県を選択" />
+                                </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="全国">全国</SelectItem>
-                                  <SelectItem value="北海道">北海道</SelectItem>
-                                  <SelectItem value="東北">東北</SelectItem>
-                                  <SelectItem value="関東">関東</SelectItem>
-                                  <SelectItem value="中部">中部</SelectItem>
-                                  <SelectItem value="関西">関西</SelectItem>
-                                  <SelectItem value="中国">中国</SelectItem>
-                                  <SelectItem value="四国">四国</SelectItem>
-                                  <SelectItem value="九州">九州</SelectItem>
+                                  {regionData[selectedRegion as keyof typeof regionData]?.map((prefecture) => (
+                                    <SelectItem key={prefecture} value={prefecture}>{prefecture}</SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
-                              <FormMessage />
-                            </FormItem>
+                            </div>
                           )}
-                        />
+                        </div>
                         
                         <Button 
                           type="submit" 
