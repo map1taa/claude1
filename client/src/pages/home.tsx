@@ -80,20 +80,27 @@ export default function Home() {
   });
 
   // Region selection state
-  const [selectedRegion, setSelectedRegion] = useState<string>("");
-  const [selectedPrefecture, setSelectedPrefecture] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<"japan" | "overseas" | "">("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
 
-  // Region and prefecture data
-  const regionData = {
-    "北海道": ["北海道"],
-    "東北": ["青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
-    "関東": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
-    "中部": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],
-    "関西": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
-    "中国": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"],
-    "四国": ["徳島県", "香川県", "愛媛県", "高知県"],
-    "九州・沖縄": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]
-  };
+  // Japan prefectures data
+  const japanPrefectures = [
+    "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+    "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+    "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県",
+    "三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県",
+    "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+    "徳島県", "香川県", "愛媛県", "高知県",
+    "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+  ];
+
+  // Overseas countries data
+  const overseasCountries = [
+    "韓国", "中国", "台湾", "香港", "タイ", "ベトナム", "シンガポール", "マレーシア", "インドネシア", "フィリピン",
+    "アメリカ", "カナダ", "メキシコ", "ブラジル", "アルゼンチン",
+    "イギリス", "フランス", "ドイツ", "イタリア", "スペイン", "オランダ", "スイス", "オーストリア", "チェコ",
+    "オーストラリア", "ニュージーランド", "インド", "トルコ", "エジプト", "南アフリカ", "その他"
+  ];
 
   // Create spot mutation
   const createSpotMutation = useMutation({
@@ -286,44 +293,95 @@ export default function Home() {
                         
                         <div className="space-y-4">
                           <div>
-                            <label className="text-slate-700 text-sm font-medium">地域</label>
-                            <Select onValueChange={(value) => {
-                              setSelectedRegion(value);
-                              setSelectedPrefecture("");
-                              if (value === "全国") {
-                                listForm.setValue("region", "全国");
-                              }
-                            }} defaultValue={selectedRegion}>
-                              <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="地域を選択" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="全国">全国</SelectItem>
-                                {Object.keys(regionData).map((region) => (
-                                  <SelectItem key={region} value={region}>{region}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          {selectedRegion && selectedRegion !== "全国" && (
-                            <div>
-                              <label className="text-slate-700 text-sm font-medium">都道府県</label>
-                              <Select onValueChange={(value) => {
-                                setSelectedPrefecture(value);
-                                listForm.setValue("region", value);
-                              }} value={selectedPrefecture}>
-                                <SelectTrigger className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                  <SelectValue placeholder="都道府県を選択" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {regionData[selectedRegion as keyof typeof regionData]?.map((prefecture) => (
-                                    <SelectItem key={prefecture} value={prefecture}>{prefecture}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                            <label className="text-slate-700 text-sm font-medium mb-3 block">地域</label>
+                            
+                            {/* Japan/Overseas Selection Buttons */}
+                            <div className="flex gap-3 mb-4">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCategory("japan");
+                                  setSelectedLocation("");
+                                }}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                  selectedCategory === "japan"
+                                    ? "text-white"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                }`}
+                                style={selectedCategory === "japan" ? { backgroundColor: '#0294b5' } : {}}
+                              >
+                                日本
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCategory("overseas");
+                                  setSelectedLocation("");
+                                }}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                  selectedCategory === "overseas"
+                                    ? "text-white"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                }`}
+                                style={selectedCategory === "overseas" ? { backgroundColor: '#0294b5' } : {}}
+                              >
+                                海外
+                              </button>
                             </div>
-                          )}
+
+                            {/* Location Selection Grid */}
+                            {selectedCategory === "japan" && (
+                              <div>
+                                <label className="text-slate-700 text-sm font-medium mb-2 block">都道府県</label>
+                                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                                  {japanPrefectures.map((prefecture) => (
+                                    <button
+                                      key={prefecture}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedLocation(prefecture);
+                                        listForm.setValue("region", prefecture);
+                                      }}
+                                      className={`px-3 py-2 text-sm rounded font-medium transition-colors ${
+                                        selectedLocation === prefecture
+                                          ? "text-white"
+                                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                      }`}
+                                      style={selectedLocation === prefecture ? { backgroundColor: '#0294b5' } : {}}
+                                    >
+                                      {prefecture}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {selectedCategory === "overseas" && (
+                              <div>
+                                <label className="text-slate-700 text-sm font-medium mb-2 block">国・地域</label>
+                                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                                  {overseasCountries.map((country) => (
+                                    <button
+                                      key={country}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedLocation(country);
+                                        listForm.setValue("region", country);
+                                      }}
+                                      className={`px-3 py-2 text-sm rounded font-medium transition-colors ${
+                                        selectedLocation === country
+                                          ? "text-white"
+                                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                      }`}
+                                      style={selectedLocation === country ? { backgroundColor: '#0294b5' } : {}}
+                                    >
+                                      {country}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         <Button 
