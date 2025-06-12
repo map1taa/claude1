@@ -168,7 +168,7 @@ export default function Home() {
             <div>
               <div>
                 <h1 className="text-3xl font-bold text-slate-800 flex items-center">
-                  <svg className="mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#fcba03' }}>
+                  <svg className="mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#0294b5' }}>
                     {/* Main paw pad */}
                     <ellipse cx="12" cy="16" rx="4" ry="3.5" />
                     {/* Top left toe */}
@@ -245,7 +245,7 @@ export default function Home() {
           <div className="lg:col-span-2 lg:order-1 space-y-6">
             {currentView === "list" ? (
               <>
-                <Card className="shadow-lg" style={{ border: '1.5mm solid #fcba03' }}>
+                <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
                     <Form {...listForm}>
@@ -300,9 +300,9 @@ export default function Home() {
                         <Button 
                           type="submit" 
                           className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
-                          style={{ backgroundColor: '#fcba03' }}
-                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#d19800'}
-                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#fcba03'}
+                          style={{ backgroundColor: '#0294b5' }}
+                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
                         >
                           リストを作成
                         </Button>
@@ -315,7 +315,7 @@ export default function Home() {
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <List className="mr-2 h-5 w-5" style={{ color: '#fcba03' }} />
+                      <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
                       作成済みリスト一覧
                     </h4>
                     <div className="space-y-2">
@@ -351,11 +351,11 @@ export default function Home() {
               </>
             ) : (
               <>
-                <Card className="shadow-lg" style={{ border: '1.5mm solid #fcba03' }}>
+                <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-slate-800 flex items-center">
-                        <Plus className="mr-2 h-5 w-5" style={{ color: '#fcba03' }} />
+                        <Plus className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
                         場所を追加
                       </h3>
                       <Button
@@ -436,9 +436,9 @@ export default function Home() {
                         <Button 
                           type="submit" 
                           className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
-                          style={{ backgroundColor: '#fcba03' }}
-                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#d19800'}
-                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#fcba03'}
+                          style={{ backgroundColor: '#0294b5' }}
+                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
                           disabled={createSpotMutation.isPending}
                         >
                           {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
@@ -452,7 +452,7 @@ export default function Home() {
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#fcba03' }} />
+                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
                       場所一覧
                     </h4>
                     {isLoading ? (
@@ -475,7 +475,7 @@ export default function Home() {
                           spot.listName === currentList.listName && 
                           spot.region === currentList.region
                         ).map((spot) => (
-                          <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#fcba03' }}>
+                          <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#0294b5' }}>
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h5 className="font-medium text-slate-800">{spot.placeName || 'タイトルなし'}</h5>
@@ -537,7 +537,7 @@ export default function Home() {
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <Star className="mr-2 h-5 w-5" style={{ color: '#fcba03' }} />
+                      <Star className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
                       おすすめスポット
                     </h3>
                     
@@ -558,7 +558,7 @@ export default function Home() {
                     ) : (
                       <div className="space-y-4">
                         {recommendations.slice(0, 3).map((rec) => (
-                          <div key={rec.spot.id} className="border-l-4 border-yellow-500 pl-3">
+                          <div key={rec.spot.id} className="border-l-4 border-blue-500 pl-3">
                             <h4 className="font-medium text-slate-800 text-sm">
                               {rec.spot.placeName || 'スポット'}
                             </h4>
@@ -567,7 +567,7 @@ export default function Home() {
                             </p>
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center space-x-1">
-                                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                                   スコア: {rec.score}
                                 </span>
                               </div>
@@ -612,7 +612,7 @@ export default function Home() {
               <Card className="shadow-sm">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                    <Users className="mr-2 h-5 w-5" style={{ color: '#fcba03' }} />
+                    <Users className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
                     ユーザー
                   </h3>
                   <div className="space-y-3">
@@ -620,7 +620,7 @@ export default function Home() {
                       <Button 
                         variant="outline" 
                         className="w-full justify-start"
-                        style={{ borderColor: '#fcba03', color: '#fcba03' }}
+                        style={{ borderColor: '#0294b5', color: '#0294b5' }}
                       >
                         <UserIcon className="mr-2 h-4 w-4" />
                         プロフィール設定
