@@ -299,11 +299,12 @@ export default function Home() {
                         
                         <Button 
                           type="submit" 
-                          className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
+                          className="w-full text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
                           style={{ backgroundColor: '#0294b5' }}
                           onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
                           onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
                         >
+                          <Plus className="mr-2 h-5 w-5" style={{ color: 'white' }} />
                           リストを作成
                         </Button>
                       </form>
