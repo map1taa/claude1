@@ -359,178 +359,25 @@ export default function Home() {
                             {selectedCategory === "overseas" && (
                               <div>
                                 <label className="text-slate-700 text-sm font-medium mb-2 block">国・地域</label>
-                                <div className="border rounded-lg p-4 bg-slate-50">
-                                  <svg 
-                                    viewBox="0 0 1000 500" 
-                                    className="w-full h-64 cursor-pointer"
-                                    style={{ maxWidth: '100%', height: 'auto' }}
-                                  >
-                                    {/* North America */}
-                                    <path
-                                      d="M50 100 L250 80 L300 150 L280 200 L200 220 L100 180 Z"
-                                      fill={selectedLocation === "アメリカ" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
+                                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                                  {overseasCountries.map((country) => (
+                                    <button
+                                      key={country}
+                                      type="button"
                                       onClick={() => {
-                                        setSelectedLocation("アメリカ");
-                                        listForm.setValue("region", "アメリカ");
+                                        setSelectedLocation(country);
+                                        listForm.setValue("region", country);
                                       }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="150" y="150" fontSize="12" textAnchor="middle" className="pointer-events-none">アメリカ</text>
-                                    
-                                    {/* Canada */}
-                                    <path
-                                      d="M80 50 L280 30 L320 80 L300 120 L250 80 L50 100 Z"
-                                      fill={selectedLocation === "カナダ" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("カナダ");
-                                        listForm.setValue("region", "カナダ");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="180" y="70" fontSize="12" textAnchor="middle" className="pointer-events-none">カナダ</text>
-
-                                    {/* Europe */}
-                                    <path
-                                      d="M400 120 L550 100 L580 180 L520 200 L450 180 Z"
-                                      fill={selectedLocation === "ヨーロッパ" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("ヨーロッパ");
-                                        listForm.setValue("region", "ヨーロッパ");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="490" y="150" fontSize="12" textAnchor="middle" className="pointer-events-none">ヨーロッパ</text>
-
-                                    {/* Asia */}
-                                    <path
-                                      d="M550 80 L800 60 L850 200 L750 220 L600 180 L580 120 Z"
-                                      fill={selectedLocation === "アジア" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("アジア");
-                                        listForm.setValue("region", "アジア");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="700" y="140" fontSize="12" textAnchor="middle" className="pointer-events-none">アジア</text>
-
-                                    {/* Japan */}
-                                    <circle
-                                      cx="820"
-                                      cy="160"
-                                      r="15"
-                                      fill={selectedLocation === "日本" ? "#0294b5" : "#fbbf24"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("日本");
-                                        listForm.setValue("region", "日本");
-                                      }}
-                                      className="hover:fill-yellow-300 transition-colors cursor-pointer"
-                                    />
-                                    <text x="820" y="190" fontSize="10" textAnchor="middle" className="pointer-events-none">日本</text>
-
-                                    {/* China */}
-                                    <path
-                                      d="M650 120 L780 100 L800 160 L750 180 L680 160 Z"
-                                      fill={selectedLocation === "中国" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("中国");
-                                        listForm.setValue("region", "中国");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="720" y="140" fontSize="10" textAnchor="middle" className="pointer-events-none">中国</text>
-
-                                    {/* Korea */}
-                                    <circle
-                                      cx="780"
-                                      cy="140"
-                                      r="8"
-                                      fill={selectedLocation === "韓国" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("韓国");
-                                        listForm.setValue("region", "韓国");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors cursor-pointer"
-                                    />
-                                    <text x="780" y="125" fontSize="8" textAnchor="middle" className="pointer-events-none">韓国</text>
-
-                                    {/* Southeast Asia */}
-                                    <path
-                                      d="M650 180 L800 170 L820 220 L750 240 L680 220 Z"
-                                      fill={selectedLocation === "東南アジア" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("東南アジア");
-                                        listForm.setValue("region", "東南アジア");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="730" y="205" fontSize="10" textAnchor="middle" className="pointer-events-none">東南アジア</text>
-
-                                    {/* Australia */}
-                                    <path
-                                      d="M650 300 L800 280 L820 340 L750 360 L680 340 Z"
-                                      fill={selectedLocation === "オーストラリア" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("オーストラリア");
-                                        listForm.setValue("region", "オーストラリア");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="730" y="320" fontSize="10" textAnchor="middle" className="pointer-events-none">オーストラリア</text>
-
-                                    {/* Africa */}
-                                    <path
-                                      d="M450 200 L580 190 L600 320 L550 380 L480 360 L430 280 Z"
-                                      fill={selectedLocation === "アフリカ" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("アフリカ");
-                                        listForm.setValue("region", "アフリカ");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="520" y="290" fontSize="12" textAnchor="middle" className="pointer-events-none">アフリカ</text>
-
-                                    {/* South America */}
-                                    <path
-                                      d="M200 250 L350 240 L380 400 L320 450 L250 430 L180 350 Z"
-                                      fill={selectedLocation === "南アメリカ" ? "#0294b5" : "#e2e8f0"}
-                                      stroke="#94a3b8"
-                                      strokeWidth="1"
-                                      onClick={() => {
-                                        setSelectedLocation("南アメリカ");
-                                        listForm.setValue("region", "南アメリカ");
-                                      }}
-                                      className="hover:fill-blue-300 transition-colors"
-                                    />
-                                    <text x="280" y="340" fontSize="12" textAnchor="middle" className="pointer-events-none">南アメリカ</text>
-                                  </svg>
-                                  
-                                  {selectedLocation && (
-                                    <div className="mt-3 p-2 bg-white rounded border">
-                                      <span className="text-sm font-medium text-slate-700">
-                                        選択中: <span style={{ color: '#0294b5' }}>{selectedLocation}</span>
-                                      </span>
-                                    </div>
-                                  )}
+                                      className={`px-3 py-2 text-sm rounded font-medium transition-colors ${
+                                        selectedLocation === country
+                                          ? "text-white"
+                                          : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                      }`}
+                                      style={selectedLocation === country ? { backgroundColor: '#0294b5' } : {}}
+                                    >
+                                      {country}
+                                    </button>
+                                  ))}
                                 </div>
                               </div>
                             )}
