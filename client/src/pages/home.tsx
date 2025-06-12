@@ -270,23 +270,7 @@ export default function Home() {
               <>
                 <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentView("list")}
-                        className="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-                        style={{ 
-                          backgroundColor: '#0294b5',
-                          color: 'white'
-                        }}
-                        onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
-                        onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
-                      >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        リスト作成に戻る
-                      </button>
-                      <h3 className="text-lg font-semibold text-slate-800">リスト作成</h3>
-                    </div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
                     <Form {...listForm}>
                       <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
                         <FormField
