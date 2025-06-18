@@ -191,7 +191,7 @@ export default function Home() {
             <div>
               <div>
                 <h1 className="text-3xl font-bold text-slate-800 flex items-center">
-                  <svg className="mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#0294b5' }}>
+                  <svg className="mr-3 h-8 w-8" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#fb5722' }}>
                     {/* Main paw pad */}
                     <ellipse cx="12" cy="16" rx="4" ry="3.5" />
                     {/* Top left toe */}
@@ -268,7 +268,7 @@ export default function Home() {
           <div className="lg:col-span-2 lg:order-1 space-y-6">
             {currentView === "list" ? (
               <>
-                <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
+                <Card className="shadow-lg" style={{ border: '1.5mm solid #fb5722' }}>
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
                     <Form {...listForm}>
@@ -308,7 +308,7 @@ export default function Home() {
                                     ? "text-white"
                                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                                 }`}
-                                style={selectedCategory === "japan" ? { backgroundColor: '#0294b5' } : {}}
+                                style={selectedCategory === "japan" ? { backgroundColor: '#fb5722' } : {}}
                               >
                                 日本
                               </button>
@@ -323,7 +323,7 @@ export default function Home() {
                                     ? "text-white"
                                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                                 }`}
-                                style={selectedCategory === "overseas" ? { backgroundColor: '#0294b5' } : {}}
+                                style={selectedCategory === "overseas" ? { backgroundColor: '#fb5722' } : {}}
                               >
                                 海外
                               </button>
@@ -347,7 +347,7 @@ export default function Home() {
                                           ? "text-white"
                                           : "bg-slate-50 text-slate-700 hover:bg-slate-100"
                                       }`}
-                                      style={selectedLocation === prefecture ? { backgroundColor: '#0294b5' } : {}}
+                                      style={selectedLocation === prefecture ? { backgroundColor: '#fb5722' } : {}}
                                     >
                                       {prefecture}
                                     </button>
@@ -373,7 +373,7 @@ export default function Home() {
                                           ? "text-white"
                                           : "bg-slate-50 text-slate-700 hover:bg-slate-100"
                                       }`}
-                                      style={selectedLocation === country ? { backgroundColor: '#0294b5' } : {}}
+                                      style={selectedLocation === country ? { backgroundColor: '#fb5722' } : {}}
                                     >
                                       {country}
                                     </button>
@@ -387,9 +387,9 @@ export default function Home() {
                         <Button 
                           type="submit" 
                           className="w-full text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
-                          style={{ backgroundColor: '#0294b5' }}
+                          style={{ backgroundColor: '#fb5722' }}
                           onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
-                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#fb5722'}
                         >
                           <Plus className="mr-2 h-5 w-5" style={{ color: 'white' }} />
                           リストを作成
@@ -403,7 +403,7 @@ export default function Home() {
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                      <List className="mr-2 h-5 w-5" style={{ color: '#fb5722' }} />
                       作成済みリスト一覧
                     </h4>
                     <div className="space-y-2">
@@ -439,11 +439,11 @@ export default function Home() {
               </>
             ) : (
               <>
-                <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
+                <Card className="shadow-lg" style={{ border: '1.5mm solid #fb5722' }}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-slate-800 flex items-center">
-                        <Plus className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                        <Plus className="mr-2 h-5 w-5" style={{ color: '#fb5722' }} />
                         場所を追加
                       </h3>
                       <Button
@@ -524,9 +524,9 @@ export default function Home() {
                         <Button 
                           type="submit" 
                           className="w-full text-white py-3 rounded-lg font-semibold transition-colors"
-                          style={{ backgroundColor: '#0294b5' }}
+                          style={{ backgroundColor: '#fb5722' }}
                           onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
-                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#fb5722'}
                           disabled={createSpotMutation.isPending}
                         >
                           {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
@@ -540,7 +540,7 @@ export default function Home() {
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#fb5722' }} />
                       場所一覧
                     </h4>
                     {isLoading ? (
@@ -563,7 +563,7 @@ export default function Home() {
                           spot.listName === currentList.listName && 
                           spot.region === currentList.region
                         ).map((spot) => (
-                          <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#0294b5' }}>
+                          <div key={spot.id} className="p-3 bg-slate-50 rounded border-l-4" style={{ borderLeftColor: '#fb5722' }}>
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h5 className="font-medium text-slate-800">{spot.placeName || 'タイトルなし'}</h5>
@@ -625,7 +625,7 @@ export default function Home() {
                 <Card className="shadow-sm">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <Star className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                      <Star className="mr-2 h-5 w-5" style={{ color: '#fb5722' }} />
                       おすすめスポット
                     </h3>
                     
@@ -700,7 +700,7 @@ export default function Home() {
               <Card className="shadow-sm">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                    <Users className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                    <Users className="mr-2 h-5 w-5" style={{ color: '#fb5722' }} />
                     ユーザー
                   </h3>
                   <div className="space-y-3">
@@ -708,7 +708,7 @@ export default function Home() {
                       <Button 
                         variant="outline" 
                         className="w-full justify-start"
-                        style={{ borderColor: '#0294b5', color: '#0294b5' }}
+                        style={{ borderColor: '#fb5722', color: '#fb5722' }}
                       >
                         <UserIcon className="mr-2 h-4 w-4" />
                         プロフィール設定
