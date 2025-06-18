@@ -268,10 +268,9 @@ export default function Home() {
           <div className="lg:col-span-2 lg:order-1 space-y-6">
             {currentView === "list" ? (
               <>
-                <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-slate-800 mb-4">リスト作成</h3>
-                    <Form {...listForm}>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-6">リスト作成</h3>
+                  <Form {...listForm}>
                       <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
                         <FormField
                           control={listForm.control}
@@ -396,65 +395,61 @@ export default function Home() {
                         </Button>
                       </form>
                     </Form>
-                  </CardContent>
-                </Card>
+                </div>
                 
                 {/* Created Lists Section */}
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
-                      作成済みリスト一覧
-                    </h4>
-                    <div className="space-y-2">
-                      {spots.length === 0 ? (
-                        <p className="text-slate-500 text-sm">まだリストがありません</p>
-                      ) : (
-                        <>
-                          {Object.entries(
-                            spots.reduce((acc, spot) => {
-                              const key = `${spot.listName}-${spot.region}`;
-                              if (!acc[key]) {
-                                acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
-                              }
-                              acc[key].count++;
-                              return acc;
-                            }, {} as Record<string, { listName: string; region: string; count: number }>)
-                          ).map(([key, list]) => (
-                            <div key={key} className="flex justify-between items-center p-2 bg-slate-50 rounded">
-                              <div>
-                                <p className="font-medium text-slate-700">{list.listName}</p>
-                                <p className="text-sm text-slate-500">{list.region}</p>
-                              </div>
-                              <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
-                                {list.count}件
-                              </span>
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                    作成済みリスト一覧
+                  </h4>
+                  <div className="space-y-2">
+                    {spots.length === 0 ? (
+                      <p className="text-slate-500 text-sm">まだリストがありません</p>
+                    ) : (
+                      <>
+                        {Object.entries(
+                          spots.reduce((acc, spot) => {
+                            const key = `${spot.listName}-${spot.region}`;
+                            if (!acc[key]) {
+                              acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
+                            }
+                            acc[key].count++;
+                            return acc;
+                          }, {} as Record<string, { listName: string; region: string; count: number }>)
+                        ).map(([key, list]) => (
+                          <div key={key} className="flex justify-between items-center p-2 bg-slate-50 rounded">
+                            <div>
+                              <p className="font-medium text-slate-700">{list.listName}</p>
+                              <p className="text-sm text-slate-500">{list.region}</p>
                             </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                            <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                              {list.count}件
+                            </span>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </div>
               </>
             ) : (
               <>
-                <Card className="shadow-lg" style={{ border: '1.5mm solid #0294b5' }}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-slate-800 flex items-center">
-                        <Plus className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
-                        場所を追加
-                      </h3>
-                      <Button
-                        variant="outline"
-                        onClick={() => setCurrentView("list")}
-                        className="text-sm flex items-center"
-                      >
-                        <ArrowLeft className="mr-1 h-4 w-4" />
-                        リスト作成に戻る
-                      </Button>
-                    </div>
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-slate-800 flex items-center">
+                      <Plus className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                      場所を追加
+                    </h3>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentView("list")}
+                      className="text-sm flex items-center"
+                    >
+                      <ArrowLeft className="mr-1 h-4 w-4" />
+                      リスト作成に戻る
+                    </Button>
+                  </div>
 
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -533,16 +528,14 @@ export default function Home() {
                         </Button>
                       </form>
                     </Form>
-                  </CardContent>
-                </Card>
+                </div>
 
                 {/* Places List Section */}
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
-                    <h4 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-                      <MapPin className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
-                      場所一覧
-                    </h4>
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <MapPin className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                    場所一覧
+                  </h4>
                     {isLoading ? (
                       <div className="space-y-3">
                         {[...Array(3)].map((_, i) => (
@@ -609,8 +602,7 @@ export default function Home() {
                         ))}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                </div>
               </>
             )}
           </div>
