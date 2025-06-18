@@ -122,7 +122,6 @@ export default function Profile() {
                   </Avatar>
                   <div>
                     <h2 className="text-2xl font-bold text-slate-800">{displayName}</h2>
-                    <p className="text-slate-600">{(user as any)?.email}</p>
                   </div>
                 </div>
                 
