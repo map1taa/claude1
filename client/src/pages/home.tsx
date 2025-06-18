@@ -97,11 +97,7 @@ export default function Home() {
   // Create spot mutation
   const createSpotMutation = useMutation({
     mutationFn: async (data: InsertSpot) => {
-      return await apiRequest(`/api/spots`, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      });
+      return await apiRequest("POST", "/api/spots", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
@@ -124,9 +120,7 @@ export default function Home() {
   // Delete spot mutation
   const deleteSpotMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/spots/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest("DELETE", `/api/spots/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
@@ -146,6 +140,9 @@ export default function Home() {
   });
 
   const onSubmit = (data: FormData) => {
+    console.log("Form data:", data);
+    console.log("Current list:", currentList);
+    
     if (!currentList.listName || !currentList.region) {
       toast({
         title: "エラー",
@@ -155,14 +152,18 @@ export default function Home() {
       return;
     }
 
-    createSpotMutation.mutate({
+    const spotData = {
       ...data,
       listName: currentList.listName,
       region: currentList.region,
-    });
+    };
+    
+    console.log("Submitting spot data:", spotData);
+    createSpotMutation.mutate(spotData);
   };
 
   const onListSubmit = (data: ListFormData) => {
+    console.log("List form data:", data);
     setCurrentList(data);
     setCurrentView("spots");
     toast({
