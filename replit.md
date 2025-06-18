@@ -98,6 +98,7 @@ The application uses four main tables:
 ```
 Changelog:
 - June 18, 2025. Initial setup
+- June 19, 2025. Added user profile page with username editing and list overview
 ```
 
 # User Preferences
