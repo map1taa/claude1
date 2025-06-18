@@ -10,13 +10,13 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <MapPin className="text-[#fb5722] mr-3 h-8 w-8" />
+              <MapPin className="text-blue-600 mr-3 h-8 w-8" />
               <h1 className="text-3xl font-bold text-slate-800">
                 あしあと
               </h1>
             </div>
             <Button asChild>
-              <a href="/api/login" className="bg-[#fb5722] hover:bg-[#e74c20] text-white">
+              <a href="/api/login" className="bg-blue-600 hover:bg-blue-700 text-white">
                 ログインして始める
               </a>
             </Button>
@@ -29,7 +29,7 @@ export default function Landing() {
         <section className="text-center mb-16">
           <h2 className="text-5xl font-bold text-slate-800 mb-6">
             あなたの
-            <span className="text-[#fb5722]">お気に入りの場所</span>
+            <span className="text-blue-600">お気に入りの場所</span>
             を
             <br />
             みんなと共有しましょう
@@ -38,7 +38,7 @@ export default function Landing() {
             素敵な場所を発見したら、写真と一緒に投稿。
             友達のおすすめスポットもチェックして、新しい発見を楽しもう。
           </p>
-          <Button size="lg" asChild className="bg-[#fb5722] hover:bg-[#e74c20] text-white px-8 py-4 text-lg">
+          <Button size="lg" asChild className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg">
             <a href="/api/login">
               <MapPin className="mr-2 h-5 w-5" />
               今すぐ始める
@@ -51,7 +51,7 @@ export default function Landing() {
           <Card className="text-center border-slate-200 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="mx-auto bg-#feb8a0 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                <MapPin className="h-8 w-8 text-[#fb5722]" />
+                <MapPin className="h-8 w-8 text-blue-600" />
               </div>
               <CardTitle className="text-xl text-slate-800">スポット投稿</CardTitle>
             </CardHeader>
@@ -101,7 +101,7 @@ export default function Landing() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-[#fb5722] text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+              <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 1
               </div>
               <h4 className="text-lg font-semibold text-slate-800 mb-2">ログイン</h4>
@@ -111,7 +111,7 @@ export default function Landing() {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-[#fb5722] text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+              <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 2
               </div>
               <h4 className="text-lg font-semibold text-slate-800 mb-2">投稿</h4>
@@ -121,7 +121,7 @@ export default function Landing() {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-[#fb5722] text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
+              <div className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-4 text-lg font-bold">
                 3
               </div>
               <h4 className="text-lg font-semibold text-slate-800 mb-2">発見</h4>
@@ -134,14 +134,14 @@ export default function Landing() {
         </section>
 
         {/* CTA セクション */}
-        <section className="text-center bg-[#fb5722] text-white rounded-lg p-12">
+        <section className="text-center bg-blue-600 text-white rounded-lg p-12">
           <h3 className="text-3xl font-bold mb-4">
             今すぐ始めて、素敵な場所を共有しませんか？
           </h3>
           <p className="text-xl text-#feb8a0 mb-8">
             無料で利用できます。アカウント作成も簡単です。
           </p>
-          <Button size="lg" variant="secondary" asChild className="bg-white text-[#fb5722] hover:bg-slate-50 px-8 py-4 text-lg">
+          <Button size="lg" variant="secondary" asChild className="bg-white text-blue-600 hover:bg-slate-50 px-8 py-4 text-lg">
             <a href="/api/login">
               <Star className="mr-2 h-5 w-5" />
               無料で始める

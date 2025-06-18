@@ -116,7 +116,7 @@ export default function Profile() {
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
-                    <AvatarFallback className="text-lg font-bold" style={{ backgroundColor: '#fb5722', color: 'white' }}>
+                    <AvatarFallback className="text-lg font-bold" style={{ backgroundColor: '#0294b5', color: 'white' }}>
                       {displayName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -133,7 +133,7 @@ export default function Profile() {
                     <Button 
                       variant="outline"
                       className="flex items-center"
-                      style={{ borderColor: '#fb5722', color: '#fb5722' }}
+                      style={{ borderColor: '#0294b5', color: '#0294b5' }}
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       プロフィール編集
@@ -174,9 +174,9 @@ export default function Profile() {
                         <Button 
                           type="submit" 
                           className="w-full text-white"
-                          style={{ backgroundColor: '#fb5722' }}
-                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e74c20'}
-                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#fb5722'}
+                          style={{ backgroundColor: '#0294b5' }}
+                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
+                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
                           disabled={updateProfileMutation.isPending}
                         >
                           {updateProfileMutation.isPending ? "更新中..." : "更新"}
