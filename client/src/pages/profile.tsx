@@ -35,8 +35,8 @@ export default function Profile() {
   const form = useForm<UpdateProfile>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      username: user?.username || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "",
-      bio: user?.bio || "",
+      username: (user as any)?.username || `${(user as any)?.firstName || ""} ${(user as any)?.lastName || ""}`.trim() || "",
+      bio: (user as any)?.bio || "",
     },
   });
 
@@ -74,9 +74,9 @@ export default function Profile() {
     );
   }
 
-  const displayName = user?.username || 
-    (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 
-    user?.firstName || user?.lastName || "Unknown User");
+  const displayName = (user as any)?.username || 
+    ((user as any)?.firstName && (user as any)?.lastName ? `${(user as any).firstName} ${(user as any).lastName}` : 
+    (user as any)?.firstName || (user as any)?.lastName || "Unknown User");
 
   // Group spots by list
   const listGroups = spots.reduce((acc, spot) => {
@@ -122,8 +122,8 @@ export default function Profile() {
                   </Avatar>
                   <div>
                     <h2 className="text-2xl font-bold text-slate-800">{displayName}</h2>
-                    {user?.bio && (
-                      <p className="text-slate-600 mt-1">{user.bio}</p>
+                    {(user as any)?.bio && (
+                      <p className="text-slate-600 mt-1">{(user as any).bio}</p>
                     )}
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export default function Profile() {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>ユーザーネーム編集</DialogTitle>
+                      <DialogTitle>プロフィール編集</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

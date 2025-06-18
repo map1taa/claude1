@@ -66,12 +66,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProfile(userId: string, profile: UpdateProfile): Promise<User> {
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+    
+    if (profile.username) {
+      updateData.username = profile.username;
+    }
+    
+    if (profile.bio !== undefined) {
+      updateData.bio = profile.bio;
+    }
+    
     const [user] = await db
       .update(users)
-      .set({
-        ...profile,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.id, userId))
       .returning();
     return user;
