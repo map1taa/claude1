@@ -99,6 +99,8 @@ The application uses four main tables:
 Changelog:
 - June 18, 2025. Initial setup
 - June 19, 2025. Added user profile page with username editing and list overview
+- June 19, 2025. Unified page layout by removing card/block structures from profile and home pages
+- June 19, 2025. Added debugging for place addition functionality to troubleshoot user-reported issue
 ```
 
 # User Preferences
