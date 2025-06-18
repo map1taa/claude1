@@ -35,8 +35,8 @@ export default function Profile() {
   const form = useForm<UpdateProfile>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      firstName: (user as any)?.firstName || "",
-      lastName: (user as any)?.lastName || "",
+      username: user?.username || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "",
+      bio: user?.bio || "",
     },
   });
 
@@ -74,9 +74,9 @@ export default function Profile() {
     );
   }
 
-  const displayName = (user as any)?.firstName && (user as any)?.lastName 
-    ? `${(user as any).firstName} ${(user as any).lastName}` 
-    : (user as any)?.email || "Unknown User";
+  const displayName = user?.username || 
+    (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 
+    user?.firstName || user?.lastName || "Unknown User");
 
   // Group spots by list
   const listGroups = spots.reduce((acc, spot) => {
@@ -122,6 +122,9 @@ export default function Profile() {
                   </Avatar>
                   <div>
                     <h2 className="text-2xl font-bold text-slate-800">{displayName}</h2>
+                    {user?.bio && (
+                      <p className="text-slate-600 mt-1">{user.bio}</p>
+                    )}
                   </div>
                 </div>
                 
@@ -144,12 +147,12 @@ export default function Profile() {
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                           control={form.control}
-                          name="firstName"
+                          name="username"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>名前</FormLabel>
+                              <FormLabel>ユーザーネーム</FormLabel>
                               <FormControl>
-                                <Input placeholder="太郎" {...field} />
+                                <Input placeholder="あなたの名前" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -157,12 +160,12 @@ export default function Profile() {
                         />
                         <FormField
                           control={form.control}
-                          name="lastName"
+                          name="bio"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>姓</FormLabel>
+                              <FormLabel>ひとことプロフィール</FormLabel>
                               <FormControl>
-                                <Input placeholder="田中" {...field} />
+                                <Input placeholder="自分について一言どうぞ" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>

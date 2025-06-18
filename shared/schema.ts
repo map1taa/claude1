@@ -30,6 +30,7 @@ export const users = pgTable("users", {
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  username: varchar("username"),
   profileImageUrl: varchar("profile_image_url"),
   bio: text("bio"),
   location: varchar("location"),
@@ -80,11 +81,8 @@ export type Spot = typeof spots.$inferSelect;
 
 // Profile update schema
 export const updateProfileSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  bio: z.string().optional(),
-  location: z.string().optional(),
-  isPublic: z.boolean().optional(),
+  username: z.string().min(1, "ユーザーネームを入力してください").max(50, "ユーザーネームは50文字以内で入力してください"),
+  bio: z.string().max(200, "ひとことプロフィールは200文字以内で入力してください").optional(),
 });
 
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
