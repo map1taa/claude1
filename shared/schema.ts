@@ -63,7 +63,7 @@ export const spots = pgTable("spots", {
   listName: text("list_name").notNull().default("あしあとリスト"),
   region: text("region").notNull().default("全国"),
   placeName: text("place_name").notNull(),
-  url: text("url").notNull(),
+  url: text("url").default(""),
   comment: text("comment").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [

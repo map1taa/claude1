@@ -97,9 +97,11 @@ export default function Home() {
   // Create spot mutation
   const createSpotMutation = useMutation({
     mutationFn: async (data: InsertSpot) => {
+      console.log("Sending API request with data:", data);
       return await apiRequest("POST", "/api/spots", data);
     },
     onSuccess: () => {
+      console.log("Spot created successfully");
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
       queryClient.invalidateQueries({ queryKey: ["/api/recommendations"] });
       form.reset();
@@ -109,9 +111,10 @@ export default function Home() {
       });
     },
     onError: (error) => {
+      console.error("Error creating spot:", error);
       toast({
         title: "エラー",
-        description: "場所の追加に失敗しました。",
+        description: `場所の追加に失敗しました: ${error.message}`,
         variant: "destructive",
       });
     },
