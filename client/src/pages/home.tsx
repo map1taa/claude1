@@ -460,16 +460,16 @@ export default function Home() {
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                         <FormField
                           control={form.control}
-                          name="placeName"
+                          name="url"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-slate-700 flex items-center">
-                                <MapPin className="text-slate-400 mr-1 h-4 w-4" />
-                                場所名
+                                <Globe className="text-slate-400 mr-1 h-4 w-4" />
+                                URL
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="例：スターバックス コーヒー 渋谷店"
+                                  placeholder="例：https://example.com"
                                   className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   {...field}
                                 />
@@ -481,16 +481,16 @@ export default function Home() {
 
                         <FormField
                           control={form.control}
-                          name="url"
+                          name="placeName"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-slate-700 flex items-center">
-                                <Globe className="text-slate-400 mr-1 h-4 w-4" />
-                                URL
+                                <MapPin className="text-slate-400 mr-1 h-4 w-4" />
+                                場所名
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="例：https://example.com"
+                                  placeholder="例：スターバックス コーヒー 渋谷店"
                                   className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   {...field}
                                 />
