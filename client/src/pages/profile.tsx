@@ -224,43 +224,22 @@ export default function Profile() {
                   </Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   {Object.entries(listGroups).map(([key, list]) => (
-                    <Card key={key} className="border border-slate-200 hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-1">
-                              {list.listName}
-                            </h3>
-                            <div className="flex items-center text-slate-600 text-sm">
-                              <MapPin className="h-4 w-4 mr-1" style={{ color: '#0294b5' }} />
-                              <span>{list.region}</span>
-                            </div>
-                          </div>
-                          <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                            {list.spots.length}件
-                          </span>
+                    <div key={key} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="h-4 w-4" style={{ color: '#0294b5' }} />
+                        <div>
+                          <h3 className="text-lg font-medium text-slate-800">
+                            {list.listName}
+                          </h3>
+                          <span className="text-sm text-slate-600">{list.region}</span>
                         </div>
-
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-slate-700">場所一覧:</h4>
-                          <div className="space-y-1 max-h-32 overflow-y-auto">
-                            {list.spots.slice(0, 3).map((spot) => (
-                              <div key={spot.id} className="flex items-center text-sm text-slate-600">
-                                <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#0294b5' }}></div>
-                                <span className="truncate">{spot.placeName}</span>
-                              </div>
-                            ))}
-                            {list.spots.length > 3 && (
-                              <div className="text-xs text-slate-500 ml-4">
-                                他 {list.spots.length - 3} 件...
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                      <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                        {list.spots.length}件
+                      </span>
+                    </div>
                   ))}
                 </div>
               )}
