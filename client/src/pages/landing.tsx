@@ -4,7 +4,7 @@ import { MapPin, Users, Heart, Star } from "lucide-react";
 
 export default function Landing() {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-slate-100 min-h-screen">
+    <div className="min-h-screen" style={{ backgroundColor: '#f1eee9' }}>
       {/* ヘッダー */}
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="container mx-auto px-4 py-6">

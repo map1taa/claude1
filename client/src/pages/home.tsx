@@ -183,7 +183,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="min-h-screen" style={{ backgroundColor: '#f1eee9' }}>
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="container mx-auto px-4 py-6">
