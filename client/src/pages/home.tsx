@@ -460,27 +460,6 @@ export default function Home() {
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                         <FormField
                           control={form.control}
-                          name="url"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-slate-700 flex items-center">
-                                <Globe className="text-slate-400 mr-1 h-4 w-4" />
-                                URL
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="例：https://example.com"
-                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
                           name="placeName"
                           render={({ field }) => (
                             <FormItem>
@@ -512,6 +491,27 @@ export default function Home() {
                               <FormControl>
                                 <Textarea
                                   placeholder="この場所についてのコメントを入力..."
+                                  className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-700 flex items-center">
+                                <Globe className="text-slate-400 mr-1 h-4 w-4" />
+                                URL
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="例：https://example.com"
                                   className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   {...field}
                                 />
