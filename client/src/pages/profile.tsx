@@ -107,144 +107,137 @@ export default function Profile() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-8">
           
-          {/* User Profile Card */}
-          <Card className="shadow-lg border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
-                    <AvatarFallback className="text-lg font-bold" style={{ backgroundColor: '#0294b5', color: 'white' }}>
-                      {displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-800">{displayName}</h2>
-                    {(user as any)?.bio && (
-                      <p className="text-slate-600 mt-1">{(user as any).bio}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline"
-                      className="flex items-center"
-                      style={{ borderColor: '#0294b5', color: '#0294b5' }}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      プロフィール編集
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>プロフィール編集</DialogTitle>
-                    </DialogHeader>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>ユーザーネーム</FormLabel>
-                              <FormControl>
-                                <Input placeholder="あなたの名前" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="bio"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>ひとことプロフィール</FormLabel>
-                              <FormControl>
-                                <Input placeholder="自分について一言どうぞ" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button 
-                          type="submit" 
-                          className="w-full text-white"
-                          style={{ backgroundColor: '#0294b5' }}
-                          onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
-                          onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
-                          disabled={updateProfileMutation.isPending}
-                        >
-                          {updateProfileMutation.isPending ? "更新中..." : "更新"}
-                        </Button>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
+          {/* User Profile Section */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
+                <AvatarFallback className="text-lg font-bold" style={{ backgroundColor: '#0294b5', color: 'white' }}>
+                  {displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">{displayName}</h2>
+                {(user as any)?.bio && (
+                  <p className="text-slate-600 mt-1">{(user as any).bio}</p>
+                )}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Lists Overview */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center text-lg">
-                <List className="h-5 w-5 mr-2" style={{ color: '#0294b5' }} />
-                作成したリスト一覧 ({Object.keys(listGroups).length}個)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {spotsLoading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-6 bg-slate-200 rounded mb-2"></div>
-                      <div className="h-4 bg-slate-200 rounded mb-2"></div>
-                      <div className="h-16 bg-slate-200 rounded"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : Object.keys(listGroups).length === 0 ? (
-                <div className="text-center py-12">
-                  <List className="text-slate-300 h-16 w-16 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-slate-600 mb-2">
-                    まだリストが作成されていません
-                  </h3>
-                  <p className="text-slate-500 mb-4">
-                    最初のリストを作成してみましょう
-                  </p>
-                  <Link href="/">
-                    <Button style={{ backgroundColor: '#0294b5' }} className="text-white">
-                      リストを作成する
+            </div>
+            
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="flex items-center"
+                  style={{ borderColor: '#0294b5', color: '#0294b5' }}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  プロフィール編集
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>プロフィール編集</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ユーザーネーム</FormLabel>
+                          <FormControl>
+                            <Input placeholder="あなたの名前" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="bio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ひとことプロフィール</FormLabel>
+                          <FormControl>
+                            <Input placeholder="自分について一言どうぞ" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full text-white"
+                      style={{ backgroundColor: '#0294b5' }}
+                      onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#026b85'}
+                      onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#0294b5'}
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      {updateProfileMutation.isPending ? "更新中..." : "更新"}
                     </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {Object.entries(listGroups).map(([key, list]) => (
-                    <div key={key} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <MapPin className="h-4 w-4" style={{ color: '#0294b5' }} />
-                        <div>
-                          <h3 className="text-lg font-medium text-slate-800">
-                            {list.listName}
-                          </h3>
-                          <span className="text-sm text-slate-600">{list.region}</span>
-                        </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Lists Overview Section */}
+          <div>
+            <h3 className="flex items-center text-xl font-bold text-slate-800 mb-6">
+              <List className="h-5 w-5 mr-2" style={{ color: '#0294b5' }} />
+              作成したリスト一覧 ({Object.keys(listGroups).length}個)
+            </h3>
+            
+            {spotsLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-6 bg-slate-200 rounded mb-2"></div>
+                    <div className="h-4 bg-slate-200 rounded mb-2"></div>
+                    <div className="h-16 bg-slate-200 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : Object.keys(listGroups).length === 0 ? (
+              <div className="text-center py-12">
+                <List className="text-slate-300 h-16 w-16 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-600 mb-2">
+                  まだリストが作成されていません
+                </h3>
+                <p className="text-slate-500 mb-4">
+                  最初のリストを作成してみましょう
+                </p>
+                <Link href="/">
+                  <Button style={{ backgroundColor: '#0294b5' }} className="text-white">
+                    リストを作成する
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(listGroups).map(([key, list]) => (
+                  <div key={key} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="h-4 w-4" style={{ color: '#0294b5' }} />
+                      <div>
+                        <h3 className="text-lg font-medium text-slate-800">
+                          {list.listName}
+                        </h3>
+                        <span className="text-sm text-slate-600">{list.region}</span>
                       </div>
-                      <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                        {list.spots.length}件
-                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                      {list.spots.length}件
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
         </div>
       </main>
