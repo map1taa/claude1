@@ -17,7 +17,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users, ArrowLeft, Edit2 } from "lucide-react";
 import { Link } from "wouter";
 
 type FormData = {
@@ -65,11 +66,20 @@ export default function Home() {
     },
   });
 
+  // Edit list form
+  const editForm = useForm<{ listName: string }>({
+    defaultValues: {
+      listName: "",
+    },
+  });
+
   // Location selection state
   const [selectedCategory, setSelectedCategory] = useState<"japan" | "overseas">("japan");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [currentList, setCurrentList] = useState<{ listName: string; region: string }>({ listName: "", region: "" });
   const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
+  const [editingList, setEditingList] = useState<{ listName: string; region: string } | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Japan prefectures data
   const japanPrefectures = [
@@ -164,6 +174,33 @@ export default function Home() {
     },
   });
 
+  // Edit list mutation
+  const editListMutation = useMutation({
+    mutationFn: async ({ oldListName, newListName, region }: { oldListName: string; newListName: string; region: string }) => {
+      return await apiRequest("PATCH", "/api/spots/update-list", {
+        oldListName,
+        newListName,
+        region,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
+      setIsEditDialogOpen(false);
+      setEditingList(null);
+      toast({
+        title: "更新完了",
+        description: "リスト名を変更しました。",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "エラー",
+        description: "リスト名の変更に失敗しました。",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: FormData) => {
     console.log("Form data:", data);
     console.log("Current list:", currentList);
@@ -199,6 +236,22 @@ export default function Home() {
 
   const handleDelete = (id: number) => {
     deleteSpotMutation.mutate(id);
+  };
+
+  const handleEditList = (listName: string, region: string) => {
+    setEditingList({ listName, region });
+    editForm.setValue("listName", listName);
+    setIsEditDialogOpen(true);
+  };
+
+  const onEditSubmit = (data: { listName: string }) => {
+    if (!editingList) return;
+    
+    editListMutation.mutate({
+      oldListName: editingList.listName,
+      newListName: data.listName,
+      region: editingList.region,
+    });
   };
 
   const displayName = (user as any)?.username || (user as any)?.firstName || "ユーザー";
@@ -406,22 +459,32 @@ export default function Home() {
                             return acc;
                           }, {} as Record<string, { listName: string; region: string; count: number }>)
                         ).map(([key, list]) => (
-                          <button
-                            key={key}
-                            onClick={() => {
-                              setViewingList({ listName: list.listName, region: list.region });
-                              setCurrentView("view-list");
-                            }}
-                            className="w-full flex justify-between items-center p-2 bg-slate-50 rounded hover:bg-slate-100 transition-colors"
-                          >
-                            <div className="text-left">
-                              <p className="font-medium text-slate-700">{list.listName}</p>
-                              <p className="text-sm text-slate-500">{list.region}</p>
-                            </div>
-                            <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
-                              {list.count}件
-                            </span>
-                          </button>
+                          <div key={key} className="w-full flex items-center p-2 bg-slate-50 rounded hover:bg-slate-100 transition-colors">
+                            <button
+                              onClick={() => {
+                                setViewingList({ listName: list.listName, region: list.region });
+                                setCurrentView("view-list");
+                              }}
+                              className="flex-1 flex justify-between items-center text-left"
+                            >
+                              <div>
+                                <p className="font-medium text-slate-700">{list.listName}</p>
+                                <p className="text-sm text-slate-500">{list.region}</p>
+                              </div>
+                              <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
+                                {list.count}件
+                              </span>
+                            </button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditList(list.listName, list.region)}
+                              className="ml-2"
+                              style={{ color: '#0294b5' }}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         ))}
                       </>
                     )}
@@ -758,6 +821,55 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Edit List Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>リスト名を編集</DialogTitle>
+            <DialogDescription>
+              リスト名を変更してください。
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <FormField
+                control={editForm.control}
+                name="listName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>リスト名</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="新しいリスト名を入力..."
+                        {...field}
+                        className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  キャンセル
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={editListMutation.isPending}
+                  style={{ backgroundColor: '#0294b5', color: 'white' }}
+                >
+                  {editListMutation.isPending ? "更新中..." : "更新"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

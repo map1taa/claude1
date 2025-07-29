@@ -239,6 +239,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update list name
+  app.patch("/api/spots/update-list", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { oldListName, newListName, region } = req.body;
+      
+      if (!oldListName || !newListName || !region) {
+        return res.status(400).json({ message: "oldListName, newListName, and region are required" });
+      }
+
+      await storage.updateListName(userId, oldListName, newListName, region);
+      res.json({ message: "List updated successfully" });
+    } catch (error) {
+      console.error("Error updating list:", error);
+      res.status(500).json({ message: "Failed to update list" });
+    }
+  });
+
 
 
   const httpServer = createServer(app);
