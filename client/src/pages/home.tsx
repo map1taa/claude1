@@ -101,7 +101,7 @@ export default function Home() {
   const extractUrlMutation = useMutation({
     mutationFn: async (url: string): Promise<{ storeName?: string; prefecture?: string }> => {
       const response = await apiRequest("POST", "/api/extract-url", { url });
-      return response as { storeName?: string; prefecture?: string };
+      return await response.json() as { storeName?: string; prefecture?: string };
     },
     onSuccess: (data: { storeName?: string; prefecture?: string }) => {
       console.log("Extracted data:", data);
