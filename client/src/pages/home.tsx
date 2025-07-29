@@ -676,10 +676,14 @@ export default function Home() {
                                 placeholder="例：https://tabelog.com/... または https://maps.app.goo.gl/..."
                                 className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 {...field}
-                                onBlur={(e) => {
-                                  field.onBlur();
+                                onChange={(e) => {
+                                  field.onChange(e);
                                   const url = e.target.value.trim();
-                                  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                                  // URLが完全な形式の場合、自動的に情報を抽出
+                                  if (url && (url.startsWith('http://') || url.startsWith('https://')) && 
+                                      (url.includes('tabelog.com') || url.includes('maps.app.goo.gl') || 
+                                       url.includes('google.com/maps') || url.includes('gnavi.co.jp') || 
+                                       url.includes('hotpepper.jp'))) {
                                     console.log("Extracting info from URL:", url);
                                     extractUrlMutation.mutate(url);
                                   }
