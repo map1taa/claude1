@@ -103,6 +103,7 @@ Changelog:
 - June 19, 2025. Added debugging for place addition functionality to troubleshoot user-reported issue
 - July 29, 2025. Added list editing functionality with edit buttons and modal forms
 - July 29, 2025. Improved URL extraction for Google Maps and rearranged form layout (URL → Place name → Comment)
+- July 29, 2025. Added "追加" buttons to list display screens for easier list and place creation
 ```
 
 # User Preferences

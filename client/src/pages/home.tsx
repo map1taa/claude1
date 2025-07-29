@@ -440,10 +440,22 @@ export default function Home() {
                 
                 {/* Created Lists Section */}
                 <div>
-                  <h4 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                    <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
-                    作成済みリスト一覧
-                  </h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-bold text-slate-800 flex items-center">
+                      <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                      作成済みリスト一覧
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentView("list")}
+                      className="flex items-center text-sm"
+                      style={{ borderColor: '#0294b5', color: '#0294b5' }}
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      追加
+                    </Button>
+                  </div>
                   <div className="space-y-2">
                     {spots.length === 0 ? (
                       <p className="text-slate-500 text-sm">まだリストがありません</p>
@@ -499,17 +511,30 @@ export default function Home() {
                       <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
                       {viewingList.listName} - {viewingList.region}
                     </h3>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setCurrentView("list");
-                        setViewingList(null);
-                      }}
-                      className="text-sm flex items-center"
-                    >
-                      <ArrowLeft className="mr-1 h-4 w-4" />
-                      リスト一覧に戻る
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        onClick={() => {
+                          setCurrentList({ listName: viewingList.listName, region: viewingList.region });
+                          setCurrentView("spots");
+                        }}
+                        className="text-sm flex items-center text-white"
+                        style={{ backgroundColor: '#0294b5' }}
+                      >
+                        <Plus className="mr-1 h-4 w-4" />
+                        場所を追加
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCurrentView("list");
+                          setViewingList(null);
+                        }}
+                        className="text-sm flex items-center"
+                      >
+                        <ArrowLeft className="mr-1 h-4 w-4" />
+                        リスト一覧に戻る
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Places in this list */}
