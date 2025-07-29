@@ -150,16 +150,29 @@ function getSiteHandler(url: string) {
 }
 
 // Google Maps専用の抽出関数（正規表現ベース）
-function extractGoogleMapsStoreName(html: string): string | undefined {
+function extractGoogleMapsStoreName(html: string, url: string): string | undefined {
+  console.log(`[URL Extractor] Attempting to extract store name from Google Maps`);
+  
+  // URLから場所の名前を抽出する試み（place/の後の部分）
+  const placeMatch = url.match(/\/place\/([^\/]+)/);
+  if (placeMatch) {
+    const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
+    if (placeName && placeName.length > 0) {
+      console.log(`[URL Extractor] Found place name from URL: ${placeName}`);
+      return placeName;
+    }
+  }
+  
   // タイトルタグから抽出
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
   if (titleMatch) {
     const title = titleMatch[1].trim();
+    console.log(`[URL Extractor] Found title tag: ${title}`);
     
     // 日本語版Google Maps
     if (title.includes(' - Google マップ')) {
       const storeName = title.replace(' - Google マップ', '').trim();
-      if (storeName && storeName !== 'Google マップ' && storeName.length > 0) {
+      if (storeName && storeName !== 'Google マップ' && storeName !== 'Google' && storeName.length > 0) {
         console.log(`[URL Extractor] Found store name from title (JP): ${storeName}`);
         return storeName;
       }
@@ -168,10 +181,16 @@ function extractGoogleMapsStoreName(html: string): string | undefined {
     // 英語版Google Maps
     if (title.includes(' - Google Maps')) {
       const storeName = title.replace(' - Google Maps', '').trim();
-      if (storeName && storeName !== 'Google Maps' && storeName.length > 0) {
+      if (storeName && storeName !== 'Google Maps' && storeName !== 'Google' && storeName.length > 0) {
         console.log(`[URL Extractor] Found store name from title (EN): ${storeName}`);
         return storeName;
       }
+    }
+    
+    // タイトルがGoogle Maps/マップでない場合は場所名として扱う
+    if (!title.includes('Google Maps') && !title.includes('Google マップ') && title.length > 0 && title.length < 100) {
+      console.log(`[URL Extractor] Using full title as store name: ${title}`);
+      return title;
     }
   }
   
@@ -179,10 +198,11 @@ function extractGoogleMapsStoreName(html: string): string | undefined {
   const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
   if (ogTitleMatch) {
     const ogTitle = ogTitleMatch[1].trim();
+    console.log(`[URL Extractor] Found og:title: ${ogTitle}`);
     
     if (ogTitle.includes(' - Google マップ')) {
       const storeName = ogTitle.replace(' - Google マップ', '').trim();
-      if (storeName && storeName !== 'Google マップ' && storeName.length > 0) {
+      if (storeName && storeName !== 'Google マップ' && storeName !== 'Google' && storeName.length > 0) {
         console.log(`[URL Extractor] Found store name from og:title (JP): ${storeName}`);
         return storeName;
       }
@@ -190,10 +210,24 @@ function extractGoogleMapsStoreName(html: string): string | undefined {
     
     if (ogTitle.includes(' - Google Maps')) {
       const storeName = ogTitle.replace(' - Google Maps', '').trim();
-      if (storeName && storeName !== 'Google Maps' && storeName.length > 0) {
+      if (storeName && storeName !== 'Google Maps' && storeName !== 'Google' && storeName.length > 0) {
         console.log(`[URL Extractor] Found store name from og:title (EN): ${storeName}`);
         return storeName;
       }
+    }
+  }
+  
+  // JSON-LDデータから抽出
+  const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/i);
+  if (jsonLdMatch) {
+    try {
+      const jsonData = JSON.parse(jsonLdMatch[1]);
+      if (jsonData.name) {
+        console.log(`[URL Extractor] Found store name from JSON-LD: ${jsonData.name}`);
+        return jsonData.name;
+      }
+    } catch (e) {
+      console.log(`[URL Extractor] Failed to parse JSON-LD data`);
     }
   }
   
@@ -207,8 +241,14 @@ export async function extractInfoFromUrl(url: string): Promise<ExtractedInfo> {
     
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ja,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      },
+      redirect: 'follow'
     });
     
     if (!response.ok) {
@@ -216,12 +256,16 @@ export async function extractInfoFromUrl(url: string): Promise<ExtractedInfo> {
       return {};
     }
     
+    // リダイレクト後の最終URLを取得
+    const finalUrl = response.url;
+    console.log(`[URL Extractor] Final URL after redirects: ${finalUrl}`);
+    
     const html = await response.text();
     
     // Google Mapsの場合は正規表現ベースで抽出
-    if (SITE_PATTERNS.googlemaps.pattern.test(url)) {
-      console.log(`[URL Extractor] Using Google Maps regex handler for: ${url}`);
-      const storeName = extractGoogleMapsStoreName(html);
+    if (SITE_PATTERNS.googlemaps.pattern.test(url) || SITE_PATTERNS.googlemaps.pattern.test(finalUrl)) {
+      console.log(`[URL Extractor] Using Google Maps regex handler for: ${finalUrl}`);
+      const storeName = extractGoogleMapsStoreName(html, finalUrl);
       const prefecture = extractPrefectureFromText(html);
       
       console.log(`[URL Extractor] Google Maps extracted - Store: ${storeName}, Prefecture: ${prefecture}`);
