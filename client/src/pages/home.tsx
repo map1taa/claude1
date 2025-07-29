@@ -298,6 +298,18 @@ export default function Home() {
             
             {isAuthenticated && (
               <div className="flex items-center space-x-4">
+                <Button 
+                  onClick={() => {
+                    setCurrentView("list");
+                    setViewingList(null);
+                  }}
+                  size="default"
+                  style={{ backgroundColor: '#0294b5', color: 'white' }}
+                  className="hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  リスト作成
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -337,8 +349,11 @@ export default function Home() {
           <div className="lg:col-span-2 lg:order-1 space-y-6">
             {currentView === "list" ? (
               <>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-6">リスト作成</h3>
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                    <Plus className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                    新しいリストを作成
+                  </h3>
                   <Form {...listForm}>
                     <form onSubmit={listForm.handleSubmit(onListSubmit)} className="space-y-4">
                       <FormField
