@@ -42,7 +42,7 @@ export default function Home() {
   const { toast } = useToast();
   
   // Navigation state
-  const [currentView, setCurrentView] = useState<"list" | "spots">("list");
+  const [currentView, setCurrentView] = useState<"list" | "spots" | "view-list">("list");
   
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
@@ -77,6 +77,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<"japan" | "overseas">("japan");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [currentList, setCurrentList] = useState<{ listName: string; region: string }>({ listName: "", region: "" });
+  const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
 
   // Japan prefectures data
   const japanPrefectures = [
@@ -415,17 +416,129 @@ export default function Home() {
                             return acc;
                           }, {} as Record<string, { listName: string; region: string; count: number }>)
                         ).map(([key, list]) => (
-                          <div key={key} className="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <div>
+                          <button
+                            key={key}
+                            onClick={() => {
+                              setViewingList({ listName: list.listName, region: list.region });
+                              setCurrentView("view-list");
+                            }}
+                            className="w-full flex justify-between items-center p-2 bg-slate-50 rounded hover:bg-slate-100 transition-colors"
+                          >
+                            <div className="text-left">
                               <p className="font-medium text-slate-700">{list.listName}</p>
                               <p className="text-sm text-slate-500">{list.region}</p>
                             </div>
                             <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
                               {list.count}件
                             </span>
-                          </div>
+                          </button>
                         ))}
                       </>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : currentView === "view-list" && viewingList ? (
+              <>
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-slate-800 flex items-center">
+                      <List className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
+                      {viewingList.listName} - {viewingList.region}
+                    </h3>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setCurrentView("list");
+                        setViewingList(null);
+                      }}
+                      className="text-sm flex items-center"
+                    >
+                      <ArrowLeft className="mr-1 h-4 w-4" />
+                      リスト一覧に戻る
+                    </Button>
+                  </div>
+
+                  {/* Places in this list */}
+                  <div className="space-y-3">
+                    {isLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : spots.filter(spot => 
+                      spot.listName === viewingList.listName && 
+                      spot.region === viewingList.region
+                    ).length === 0 ? (
+                      <p className="text-slate-500 text-sm">このリストには場所が登録されていません</p>
+                    ) : (
+                      spots.filter(spot => 
+                        spot.listName === viewingList.listName && 
+                        spot.region === viewingList.region
+                      ).map((spot) => (
+                        <div key={spot.id} className="bg-slate-50 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-slate-800 text-base">{spot.placeName}</h4>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: '#e8f4f8', color: '#0294b5' }}>
+                                  {spot.region}
+                                </span>
+                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: '#f1eee9', color: '#8b4513' }}>
+                                  {spot.listName}
+                                </span>
+                              </div>
+                            </div>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>場所を削除</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    この場所を削除してもよろしいですか？この操作は取り消せません。
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteSpotMutation.mutate(spot.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    削除
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                          {spot.comment && (
+                            <p className="text-slate-600 text-sm leading-relaxed">{spot.comment}</p>
+                          )}
+                          {spot.url && (
+                            <div className="mt-3">
+                              <a
+                                href={spot.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-sm px-3 py-1 rounded-lg transition-colors"
+                                style={{ backgroundColor: '#e8f4f8', color: '#0294b5' }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#d1e9f0'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#e8f4f8'}
+                              >
+                                <Globe className="h-4 w-4" />
+                                サイトを見る
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>
