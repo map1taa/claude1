@@ -11,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users, ArrowLeft, Star, Heart, Eye } from "lucide-react";
+import { MapPin, Plus, Trash2, MessageCircle, Calendar, List, Globe, User as UserIcon, LogOut, Settings, Users, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 
 type FormData = {
@@ -31,11 +31,7 @@ type ListFormData = {
   region: string;
 };
 
-type RecommendationScore = {
-  spot: Spot & { user: User };
-  score: number;
-  reasons: string[];
-};
+
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -49,11 +45,7 @@ export default function Home() {
     queryKey: ["/api/spots"],
   });
 
-  // Fetch personalized recommendations
-  const { data: recommendations = [], isLoading: isLoadingRecommendations } = useQuery<RecommendationScore[]>({
-    queryKey: ["/api/recommendations"],
-    enabled: isAuthenticated,
-  });
+
 
   // List creation form
   const listForm = useForm<ListFormData>({
@@ -135,7 +127,6 @@ export default function Home() {
     onSuccess: () => {
       console.log("Spot created successfully");
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/recommendations"] });
       form.reset();
       toast({
         title: "場所が追加されました",
@@ -159,7 +150,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/recommendations"] });
       toast({
         title: "場所が削除されました",
         description: "場所がリストから削除されました。",
@@ -728,59 +718,7 @@ export default function Home() {
           {/* Recommendations and Profile Section - Second Column on PC */}
           <div className="lg:col-span-1 lg:order-2">
             <div className="sticky top-8 space-y-6">
-              {/* Personalized Recommendations */}
-              {isAuthenticated && (
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                    <Star className="mr-2 h-5 w-5" style={{ color: '#0294b5' }} />
-                    おすすめスポット
-                  </h3>
-                  
-                  {isLoadingRecommendations ? (
-                    <div className="space-y-3">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="animate-pulse">
-                          <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                          <div className="h-3 bg-slate-200 rounded w-1/2 mb-1"></div>
-                          <div className="h-2 bg-slate-200 rounded w-full"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : recommendations.length === 0 ? (
-                    <p className="text-slate-500 text-sm">
-                      まだおすすめがありません。スポットを閲覧して好みを学習させましょう！
-                    </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {recommendations.slice(0, 3).map((rec) => (
-                        <div key={rec.spot.id} className="border-l-4 border-blue-500 pl-3">
-                          <h4 className="font-medium text-slate-800 text-sm">
-                            {rec.spot.placeName || 'スポット'}
-                          </h4>
-                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                            {rec.spot.comment}
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center space-x-1">
-                              <Badge variant="outline" className="text-xs">
-                                {Math.round(rec.score * 100)}%マッチ
-                              </Badge>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <button className="p-1 hover:bg-slate-100 rounded">
-                                <Heart className="h-3 w-3 text-slate-400" />
-                              </button>
-                              <button className="p-1 hover:bg-slate-100 rounded">
-                                <Eye className="h-3 w-3 text-slate-400" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+
 
               {/* Profile Section */}
               {isAuthenticated && (
