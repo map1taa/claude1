@@ -284,7 +284,14 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold" style={{ color: '#0294b5' }}>
+              <h1 
+                className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ color: '#0294b5' }}
+                onClick={() => {
+                  setCurrentView("list");
+                  setViewingList(null);
+                }}
+              >
                 あしあと
               </h1>
             </div>
