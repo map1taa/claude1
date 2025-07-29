@@ -149,6 +149,58 @@ function getSiteHandler(url: string) {
   return SITE_PATTERNS.generic;
 }
 
+// Google Maps専用の抽出関数（正規表現ベース）
+function extractGoogleMapsStoreName(html: string): string | undefined {
+  // タイトルタグから抽出
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (titleMatch) {
+    const title = titleMatch[1].trim();
+    
+    // 日本語版Google Maps
+    if (title.includes(' - Google マップ')) {
+      const storeName = title.replace(' - Google マップ', '').trim();
+      if (storeName && storeName !== 'Google マップ' && storeName.length > 0) {
+        console.log(`[URL Extractor] Found store name from title (JP): ${storeName}`);
+        return storeName;
+      }
+    }
+    
+    // 英語版Google Maps
+    if (title.includes(' - Google Maps')) {
+      const storeName = title.replace(' - Google Maps', '').trim();
+      if (storeName && storeName !== 'Google Maps' && storeName.length > 0) {
+        console.log(`[URL Extractor] Found store name from title (EN): ${storeName}`);
+        return storeName;
+      }
+    }
+  }
+  
+  // og:titleから抽出
+  const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  if (ogTitleMatch) {
+    const ogTitle = ogTitleMatch[1].trim();
+    
+    if (ogTitle.includes(' - Google マップ')) {
+      const storeName = ogTitle.replace(' - Google マップ', '').trim();
+      if (storeName && storeName !== 'Google マップ' && storeName.length > 0) {
+        console.log(`[URL Extractor] Found store name from og:title (JP): ${storeName}`);
+        return storeName;
+      }
+    }
+    
+    if (ogTitle.includes(' - Google Maps')) {
+      const storeName = ogTitle.replace(' - Google Maps', '').trim();
+      if (storeName && storeName !== 'Google Maps' && storeName.length > 0) {
+        console.log(`[URL Extractor] Found store name from og:title (EN): ${storeName}`);
+        return storeName;
+      }
+    }
+  }
+  
+  console.log(`[URL Extractor] Could not extract store name from Google Maps`);
+  return undefined;
+}
+
 export async function extractInfoFromUrl(url: string): Promise<ExtractedInfo> {
   try {
     console.log(`[URL Extractor] Fetching: ${url}`);
@@ -165,16 +217,67 @@ export async function extractInfoFromUrl(url: string): Promise<ExtractedInfo> {
     }
     
     const html = await response.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
     
+    // Google Mapsの場合は正規表現ベースで抽出
+    if (SITE_PATTERNS.googlemaps.pattern.test(url)) {
+      console.log(`[URL Extractor] Using Google Maps regex handler for: ${url}`);
+      const storeName = extractGoogleMapsStoreName(html);
+      const prefecture = extractPrefectureFromText(html);
+      
+      console.log(`[URL Extractor] Google Maps extracted - Store: ${storeName}, Prefecture: ${prefecture}`);
+      
+      return {
+        storeName: storeName || undefined,
+        prefecture: prefecture || undefined
+      };
+    }
+    
+    // 他のサイトは正規表現ベースで抽出
     const handler = getSiteHandler(url);
-    console.log(`[URL Extractor] Using handler for: ${url}`);
+    console.log(`[URL Extractor] Using regex handler for: ${url}`);
     
-    const storeName = handler.storeName(document);
-    const prefecture = handler.prefecture(document, url);
+    // 正規表現ベースの抽出関数
+    const extractWithRegex = (html: string, url: string) => {
+      let storeName: string | undefined;
+      let prefecture: string | undefined;
+      
+      // タイトルタグから抽出
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        const title = titleMatch[1].trim();
+        
+        // 食べログの場合
+        if (url.includes('tabelog.com')) {
+          const match = title.match(/^([^|]+)/);
+          if (match) {
+            storeName = match[1].trim();
+          }
+        }
+        // ぐるなびの場合
+        else if (url.includes('r.gnavi.co.jp')) {
+          const match = title.match(/^([^|]+)/);
+          if (match) {
+            storeName = match[1].trim();
+          }
+        }
+        // ホットペッパーの場合
+        else if (url.includes('hotpepper.jp')) {
+          const match = title.match(/^([^|]+)/);
+          if (match) {
+            storeName = match[1].trim();
+          }
+        }
+      }
+      
+      // 都道府県抽出
+      prefecture = extractPrefectureFromText(html);
+      
+      return { storeName, prefecture };
+    };
     
-    console.log(`[URL Extractor] Extracted - Store: ${storeName}, Prefecture: ${prefecture}`);
+    const { storeName, prefecture } = extractWithRegex(html, url);
+    
+    console.log(`[URL Extractor] Regex extracted - Store: ${storeName}, Prefecture: ${prefecture}`);
     
     return {
       storeName: storeName || undefined,

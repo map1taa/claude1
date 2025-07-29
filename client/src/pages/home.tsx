@@ -105,18 +105,39 @@ export default function Home() {
     },
     onSuccess: (data: { storeName?: string; prefecture?: string }) => {
       console.log("Extracted data:", data);
-      if (data.storeName) {
-        form.setValue("placeName", data.storeName);
+      
+      let hasData = false;
+      let description = "";
+      
+      // 場所名が抽出された場合は自動入力
+      if (data.storeName && data.storeName.trim()) {
+        form.setValue("placeName", data.storeName.trim());
+        console.log("Auto-filled place name:", data.storeName.trim());
+        description += `場所名: ${data.storeName.trim()}`;
+        hasData = true;
       }
+      
+      // 都道府県情報がある場合は地域選択を更新
       if (data.prefecture) {
-        // Update the selected location if prefecture is found
         setSelectedLocation(data.prefecture);
         setCurrentList(prev => ({ ...prev, region: data.prefecture || prev.region }));
+        if (description) description += "、";
+        description += `県: ${data.prefecture}`;
+        hasData = true;
       }
-      toast({
-        title: "URLから情報を抽出しました",
-        description: `${data.storeName ? '店舗名' : ''}${data.storeName && data.prefecture ? 'と' : ''}${data.prefecture ? '県名' : ''}を自動入力しました。`,
-      });
+      
+      if (hasData) {
+        toast({
+          title: "URLから情報を抽出しました",
+          description: description + "を自動入力しました。",
+        });
+      } else {
+        toast({
+          title: "情報の抽出ができませんでした",
+          description: "URLから場所名を取得できませんでした。手動で入力してください。",
+          variant: "destructive",
+        });
+      }
     },
     onError: (error) => {
       console.error("Error extracting URL:", error);
