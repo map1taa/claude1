@@ -583,14 +583,6 @@ export default function Home() {
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex-1">
                               <h4 className="font-semibold text-slate-800 text-base">{spot.placeName}</h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: '#e8f4f8', color: '#0294b5' }}>
-                                  {spot.region}
-                                </span>
-                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: '#f1eee9', color: '#8b4513' }}>
-                                  {spot.listName}
-                                </span>
-                              </div>
                             </div>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
