@@ -239,6 +239,48 @@ export async function extractInfoFromUrl(url: string): Promise<ExtractedInfo> {
   try {
     console.log(`[URL Extractor] Fetching: ${url}`);
     
+    // Google Maps短縮URLの場合、直接リダイレクト先を取得してみる
+    if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps')) {
+      console.log(`[URL Extractor] Detected Google Maps short URL, attempting to get redirect location`);
+      
+      try {
+        // HEADリクエストでリダイレクト先を確認
+        const headResponse = await fetch(url, {
+          method: 'HEAD',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          },
+          redirect: 'follow'
+        });
+        
+        const finalUrl = headResponse.url;
+        console.log(`[URL Extractor] Redirected to: ${finalUrl}`);
+        
+        // リダイレクト先URLから直接場所名を抽出
+        const placeMatch = finalUrl.match(/\/place\/([^\/\?]+)/);
+        if (placeMatch) {
+          const placeName = decodeURIComponent(placeMatch[1]).replace(/\+/g, ' ');
+          console.log(`[URL Extractor] Extracted place name from redirect URL: ${placeName}`);
+          
+          // 簡易的な都道府県抽出
+          let prefecture: string | undefined;
+          for (const pref of PREFECTURE_NAMES) {
+            if (finalUrl.includes(encodeURIComponent(pref)) || placeName.includes(pref)) {
+              prefecture = pref;
+              break;
+            }
+          }
+          
+          return {
+            storeName: placeName,
+            prefecture: prefecture
+          };
+        }
+      } catch (redirectError) {
+        console.error(`[URL Extractor] Error getting redirect:`, redirectError);
+      }
+    }
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
