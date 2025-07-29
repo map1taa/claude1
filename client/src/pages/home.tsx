@@ -94,6 +94,37 @@ export default function Home() {
     "アジア", "ヨーロッパ", "北アメリカ", "南アメリカ", "オセアニア", "アフリカ", "中東"
   ];
 
+  // URL extraction mutation
+  const extractUrlMutation = useMutation({
+    mutationFn: async (url: string): Promise<{ storeName?: string; prefecture?: string }> => {
+      const response = await apiRequest("POST", "/api/extract-url", { url });
+      return response as { storeName?: string; prefecture?: string };
+    },
+    onSuccess: (data: { storeName?: string; prefecture?: string }) => {
+      console.log("Extracted data:", data);
+      if (data.storeName) {
+        form.setValue("placeName", data.storeName);
+      }
+      if (data.prefecture) {
+        // Update the selected location if prefecture is found
+        setSelectedLocation(data.prefecture);
+        setCurrentList(prev => ({ ...prev, region: data.prefecture || prev.region }));
+      }
+      toast({
+        title: "URLから情報を抽出しました",
+        description: `${data.storeName ? '店舗名' : ''}${data.storeName && data.prefecture ? 'と' : ''}${data.prefecture ? '県名' : ''}を自動入力しました。`,
+      });
+    },
+    onError: (error) => {
+      console.error("Error extracting URL:", error);
+      toast({
+        title: "URL抽出エラー",
+        description: "URLから情報を抽出できませんでした。手動で入力してください。",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Create spot mutation
   const createSpotMutation = useMutation({
     mutationFn: async (data: InsertSpot) => {
@@ -468,13 +499,21 @@ export default function Home() {
                           <FormItem>
                             <FormLabel className="text-slate-700 flex items-center">
                               <Globe className="text-slate-400 mr-1 h-4 w-4" />
-                              URL
+                              URL {extractUrlMutation.isPending && <span className="text-sm text-blue-600 ml-2">情報を抽出中...</span>}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="例：https://example.com"
+                                placeholder="例：https://tabelog.com/... または https://r.gnavi.co.jp/..."
                                 className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 {...field}
+                                onBlur={(e) => {
+                                  field.onBlur();
+                                  const url = e.target.value.trim();
+                                  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                                    console.log("Extracting info from URL:", url);
+                                    extractUrlMutation.mutate(url);
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormMessage />

@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { extractInfoFromUrl } from "./urlExtractor";
 import { insertSpotSchema, updateProfileSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -215,6 +216,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ message: "Failed to delete spot" });
+    }
+  });
+
+  // Extract store info from URL
+  app.post("/api/extract-url", isAuthenticated, async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      console.log(`[API] Extracting info from URL: ${url}`);
+      const extractedInfo = await extractInfoFromUrl(url);
+      console.log(`[API] Extracted info:`, extractedInfo);
+      
+      res.json(extractedInfo);
+    } catch (error) {
+      console.error("Error extracting URL info:", error);
+      res.status(500).json({ message: "Failed to extract URL information" });
     }
   });
 
