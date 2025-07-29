@@ -17,6 +17,48 @@ const PREFECTURE_NAMES = [
 
 // 主要グルメサイトのパターン
 const SITE_PATTERNS = {
+  googlemaps: {
+    pattern: /(maps\.app\.goo\.gl|maps\.google\.com|goo\.gl\/maps)/,
+    storeName: (dom: Document) => {
+      // Google Mapsから場所名を抽出
+      const titleElement = dom.querySelector('title');
+      const title = titleElement?.textContent || '';
+      
+      // "場所名 - Google マップ" の形式から場所名を抽出
+      if (title.includes(' - Google マップ')) {
+        return title.replace(' - Google マップ', '').trim();
+      }
+      if (title.includes(' - Google Maps')) {
+        return title.replace(' - Google Maps', '').trim();
+      }
+      
+      // h1要素から抽出を試行
+      const h1Element = dom.querySelector('h1');
+      if (h1Element?.textContent) {
+        const h1Text = h1Element.textContent.trim();
+        if (h1Text && h1Text !== 'Google Maps' && h1Text.length < 100) {
+          return h1Text;
+        }
+      }
+      
+      // メタデータから抽出
+      const metaTitle = dom.querySelector('meta[property="og:title"]');
+      if (metaTitle?.getAttribute('content')) {
+        const metaContent = metaTitle.getAttribute('content') || '';
+        if (metaContent.includes(' - Google マップ')) {
+          return metaContent.replace(' - Google マップ', '').trim();
+        }
+        if (metaContent.includes(' - Google Maps')) {
+          return metaContent.replace(' - Google Maps', '').trim();
+        }
+      }
+      
+      return undefined;
+    },
+    prefecture: (dom: Document, url: string) => {
+      return extractPrefectureFromText(dom.documentElement.textContent || '');
+    }
+  },
   tabelog: {
     pattern: /tabelog\.com/,
     storeName: (dom: Document) => {
