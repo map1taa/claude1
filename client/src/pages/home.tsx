@@ -618,12 +618,41 @@ export default function Home() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                       <FormField
                         control={form.control}
+                        name="url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 flex items-center">
+                              <Globe className="text-slate-400 mr-1 h-4 w-4" />
+                              URL {extractUrlMutation.isPending && <span className="text-sm text-blue-600 ml-2">情報を抽出中...</span>}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="例：https://tabelog.com/... または https://maps.app.goo.gl/..."
+                                className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                {...field}
+                                onBlur={(e) => {
+                                  field.onBlur();
+                                  const url = e.target.value.trim();
+                                  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                                    console.log("Extracting info from URL:", url);
+                                    extractUrlMutation.mutate(url);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
                         name="placeName"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-slate-700 flex items-center">
                               <MapPin className="text-slate-400 mr-1 h-4 w-4" />
-                              場所名
+                              場所名 {extractUrlMutation.isSuccess && <span className="text-sm text-green-600 ml-2">✓ URLから自動入力</span>}
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -651,35 +680,6 @@ export default function Home() {
                                 placeholder="この場所についてのコメントを入力..."
                                 className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="url"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 flex items-center">
-                              <Globe className="text-slate-400 mr-1 h-4 w-4" />
-                              URL {extractUrlMutation.isPending && <span className="text-sm text-blue-600 ml-2">情報を抽出中...</span>}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="例：https://tabelog.com/... または https://r.gnavi.co.jp/..."
-                                className="px-4 py-3 border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                {...field}
-                                onBlur={(e) => {
-                                  field.onBlur();
-                                  const url = e.target.value.trim();
-                                  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-                                    console.log("Extracting info from URL:", url);
-                                    extractUrlMutation.mutate(url);
-                                  }
-                                }}
                               />
                             </FormControl>
                             <FormMessage />

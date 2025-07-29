@@ -101,6 +101,8 @@ Changelog:
 - June 19, 2025. Added user profile page with username editing and list overview
 - June 19, 2025. Unified page layout by removing card/block structures from profile and home pages
 - June 19, 2025. Added debugging for place addition functionality to troubleshoot user-reported issue
+- July 29, 2025. Added list editing functionality with edit buttons and modal forms
+- July 29, 2025. Improved URL extraction for Google Maps and rearranged form layout (URL → Place name → Comment)
 ```
 
 # User Preferences
