@@ -71,7 +71,7 @@ export default function CreateList() {
               <Link href="/">
                 <h1 
                   className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
-                  style={{ color: '#0294b5' }}
+                  style={{ color: '#4FAEC0' }}
                 >
                   あしあと
                 </h1>
@@ -93,7 +93,7 @@ export default function CreateList() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center text-2xl">
-              <Plus className="mr-2 h-6 w-6" style={{ color: '#0294b5' }} />
+              <Plus className="mr-2 h-6 w-6" style={{ color: '#4FAEC0' }} />
               新しいリストを作成
             </CardTitle>
             <CardDescription>
@@ -193,7 +193,7 @@ export default function CreateList() {
                 <Button
                   type="submit"
                   className="w-full"
-                  style={{ backgroundColor: '#0294b5', color: 'white' }}
+                  style={{ backgroundColor: '#4FAEC0', color: 'white' }}
                   size="lg"
                 >
                   リストを作成
