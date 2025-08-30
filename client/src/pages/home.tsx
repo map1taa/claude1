@@ -487,9 +487,7 @@ export default function Home() {
                                 <p className="font-medium text-slate-700">{list.listName}</p>
                                 <p className="text-sm text-slate-500">{list.region}</p>
                               </div>
-                              <span className="text-sm text-slate-500 bg-slate-200 px-2 py-1 rounded">
-                                {list.count}件
-                              </span>
+
                             </button>
                             <Button
                               variant="ghost"
@@ -524,9 +522,7 @@ export default function Home() {
                     </Avatar>
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-800">{displayName}</h3>
-                      <p className="text-sm text-slate-600">
-                        {spots.length}件のスポット
-                      </p>
+
                     </div>
                   </div>
                   
