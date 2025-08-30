@@ -172,15 +172,19 @@ export default function Home() {
     deleteSpotMutation.mutate(id);
   };
 
-  // Check for new list from create-list page
+  // Check for new list from create-list page and automatically view it
   useEffect(() => {
-    const newListData = sessionStorage.getItem('newList');
+    const newListData = sessionStorage.getItem('newListToView');
     if (newListData) {
       const listData = JSON.parse(newListData);
-      sessionStorage.removeItem('newList');
+      sessionStorage.removeItem('newListToView');
+      
+      // Automatically select this list for viewing
+      setViewingList({ listName: listData.listName, region: listData.region });
+      
       toast({
         title: "リストが作成されました",
-        description: `${listData.listName} (${listData.region}) のリストが作成されました。`,
+        description: `${listData.listName} (${listData.region}) への場所の追加を開始してください。`,
       });
     }
   }, [toast]);

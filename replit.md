@@ -104,6 +104,9 @@ Changelog:
 - July 29, 2025. Added list editing functionality with edit buttons and modal forms
 - July 29, 2025. Improved URL extraction for Google Maps and rearranged form layout (URL → Place name → Comment)
 - July 29, 2025. Added "追加" buttons to list display screens for easier list and place creation
+- August 30, 2025. Complete separation of list creation from home page - moved to dedicated /create-list route
+- August 30, 2025. Updated color theme consistently to #4FAEC0 throughout application
+- August 30, 2025. Added automatic navigation to place addition after list creation using session storage
 ```
 
 # User Preferences

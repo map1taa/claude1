@@ -50,7 +50,7 @@ export default function CreateList() {
 
   const onSubmit = (data: ListFormData) => {
     // Store the list data in sessionStorage to pass to home page
-    sessionStorage.setItem('newList', JSON.stringify(data));
+    sessionStorage.setItem('newListToView', JSON.stringify(data));
     
     toast({
       title: "リストが作成されました",
