@@ -13,7 +13,7 @@
 :root {
   --background: hsl(56, 100%, 94%);
   --foreground: hsl(215, 25%, 15%);
-  --muted: hsl(210, 40%, 94%);
+  --muted: hsl(56, 100%, 96%);
   --muted-foreground: hsl(215, 16%, 47%);
   --popover: hsl(0, 0%, 100%);
   --popover-foreground: hsl(215, 25%, 15%);
@@ -23,9 +23,9 @@
   --input: hsl(214, 32%, 91%);
   --primary: hsl(207, 90%, 54%);
   --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 94%);
+  --secondary: hsl(56, 100%, 96%);
   --secondary-foreground: hsl(215, 25%, 15%);
-  --accent: hsl(210, 40%, 94%);
+  --accent: hsl(56, 100%, 96%);
   --accent-foreground: hsl(215, 25%, 15%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(210, 40%, 98%);
