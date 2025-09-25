@@ -1,7 +1,7 @@
 @font-face {
-  font-family: 'Shippori Gothic B2';
-  src: url('@assets/ShipporiGothicB2-OTF-Bold_1758787162230.otf') format('opentype');
-  font-weight: bold;
+  font-family: '夏蝉丸ゴシック';
+  src: url('@assets/夏蝉丸ゴシック_1758788251613.ttf') format('truetype');
+  font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
@@ -11,7 +11,7 @@
 @tailwind utilities;
 
 :root {
-  --background: 54 100% 88%;
+  --background: 54 100% 91%;
   --foreground: 215 25% 15%;
   --muted: 56 100% 96%;
   --muted-foreground: 215 16% 47%;
@@ -34,7 +34,7 @@
 }
 
 .dark {
-  --background: 54 100% 88%;
+  --background: 54 100% 91%;
   --foreground: 215 25% 15%;
   --muted: 240 3.7% 15.9%;
   --muted-foreground: 240 5% 64.9%;
@@ -63,6 +63,6 @@
 
   body {
     @apply antialiased bg-background text-foreground;
-    font-family: "Shippori Gothic B2", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
+    font-family: "夏蝉丸ゴシック", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
   }
 }
