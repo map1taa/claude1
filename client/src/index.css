@@ -1,7 +1,7 @@
 @font-face {
-  font-family: 'M PLUS 1';
-  src: url('@assets/MPLUS1-SemiBold_1758786782033.ttf') format('truetype');
-  font-weight: 600;
+  font-family: 'Shippori Gothic B2';
+  src: url('@assets/ShipporiGothicB2-OTF-Bold_1758787162230.otf') format('opentype');
+  font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
@@ -63,6 +63,6 @@
 
   body {
     @apply antialiased bg-background text-foreground;
-    font-family: "M PLUS 1", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
+    font-family: "Shippori Gothic B2", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
   }
 }
