@@ -89,7 +89,7 @@ export default function Profile() {
   }, {} as Record<string, { listName: string; region: string; spots: (Spot & { user: User })[] }>);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f1eee9' }}>
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="container mx-auto px-4 py-4">

@@ -11,7 +11,7 @@
 @tailwind utilities;
 
 :root {
-  --background: 54 100% 91%;
+  --background: 54 100% 88%;
   --foreground: 215 25% 15%;
   --muted: 56 100% 96%;
   --muted-foreground: 215 16% 47%;
@@ -34,7 +34,7 @@
 }
 
 .dark {
-  --background: 54 100% 91%;
+  --background: 54 100% 88%;
   --foreground: 215 25% 15%;
   --muted: 240 3.7% 15.9%;
   --muted-foreground: 240 5% 64.9%;
@@ -61,8 +61,9 @@
     @apply border-border;
   }
 
-  body {
+  html, body, #root {
     @apply antialiased bg-background text-foreground;
     font-family: "夏蝉丸ゴシック", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
+    min-height: 100vh;
   }
 }
