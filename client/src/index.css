@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700;900&display=swap');
+@font-face {
+  font-family: 'M PLUS 1';
+  src: url('@assets/MPLUS1-SemiBold_1758786782033.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -57,6 +63,6 @@
 
   body {
     @apply antialiased bg-background text-foreground;
-    font-family: "Noto Sans JP", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
+    font-family: "M PLUS 1", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
   }
 }
