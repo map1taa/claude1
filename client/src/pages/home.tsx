@@ -103,7 +103,7 @@ export default function Home() {
           <>
             {/* Viewing specific list */}
             <div>
-              <div className="mb-6 border-2 border-foreground rounded-lg px-4 py-3">
+              <div className="mb-6 text-center">
                 <h2 className="text-xl font-bold">
                   {viewingList.listName}
                 </h2>
@@ -111,9 +111,8 @@ export default function Home() {
               </div>
 
               {/* Places List Section */}
-              <div className="border-t-2 border-foreground pt-6">
-                <p className="section-header mb-4">場所一覧</p>
-                <div className="border-t border-foreground/30">
+              <div>
+                <div>
                   {isLoading ? (
                     <div className="space-y-3 pt-4">
                       {[...Array(3)].map((_, i) => (
