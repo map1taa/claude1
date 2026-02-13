@@ -250,11 +250,10 @@ export default function EditList() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
-      // Update sessionStorage with new name
-      sessionStorage.setItem('editingList', JSON.stringify({ listName: variables.newListName, region }));
-      toast({
-        title: "リスト名が更新されました",
-      });
+      toast({ title: "保存しました" });
+      // Navigate to the list view on home
+      sessionStorage.setItem('newListToView', JSON.stringify({ listName: variables.newListName, region }));
+      setLocation('/');
     },
   });
 
@@ -398,7 +397,13 @@ export default function EditList() {
         <div className="flex justify-center mt-6">
           <Button
             onClick={() => {
-              editForm.handleSubmit(onEditSubmit)();
+              const currentName = editForm.getValues("listName");
+              if (currentName !== listName) {
+                editForm.handleSubmit(onEditSubmit)();
+              } else {
+                sessionStorage.setItem('newListToView', JSON.stringify({ listName, region }));
+                setLocation('/');
+              }
             }}
             className="bg-primary text-primary-foreground px-8"
             size="lg"
