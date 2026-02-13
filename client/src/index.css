@@ -11,49 +11,49 @@
 @tailwind utilities;
 
 :root {
-  --background: 54 100% 88.4%;
-  --foreground: 215 25% 15%;
-  --muted: 56 100% 96%;
-  --muted-foreground: 215 16% 47%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 215 25% 15%;
-  --card: 0 0% 100%;
-  --card-foreground: 215 25% 15%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --primary: 194 100% 54%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 56 100% 96%;
-  --secondary-foreground: 215 25% 15%;
-  --accent: 56 100% 96%;
-  --accent-foreground: 215 25% 15%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
-  --ring: 194 100% 54%;
-  --radius: 0.75rem;
+  --background: hsl(40, 23%, 91%);
+  --foreground: hsl(0, 0%, 15%);
+  --muted: hsl(40, 18%, 86%);
+  --muted-foreground: hsl(0, 0%, 40%);
+  --popover: hsl(40, 20%, 93%);
+  --popover-foreground: hsl(0, 0%, 15%);
+  --card: hsl(40, 20%, 93%);
+  --card-foreground: hsl(0, 0%, 15%);
+  --border: hsl(0, 0%, 20%);
+  --input: hsl(0, 0%, 20%);
+  --primary: hsl(189, 51%, 53%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(40, 18%, 86%);
+  --secondary-foreground: hsl(0, 0%, 15%);
+  --accent: hsl(40, 18%, 86%);
+  --accent-foreground: hsl(0, 0%, 15%);
+  --destructive: hsl(0, 60%, 40%);
+  --destructive-foreground: hsl(40, 23%, 91%);
+  --ring: hsl(189, 51%, 53%);
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: 54 100% 88.4%;
-  --foreground: 215 25% 15%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --primary: 194 100% 54%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 240 4.9% 83.9%;
-  --radius: 0.75rem;
+  --background: hsl(40, 23%, 91%);
+  --foreground: hsl(0, 0%, 15%);
+  --muted: hsl(40, 18%, 86%);
+  --muted-foreground: hsl(0, 0%, 40%);
+  --popover: hsl(40, 20%, 93%);
+  --popover-foreground: hsl(0, 0%, 15%);
+  --card: hsl(40, 20%, 93%);
+  --card-foreground: hsl(0, 0%, 15%);
+  --border: hsl(0, 0%, 20%);
+  --input: hsl(0, 0%, 20%);
+  --primary: hsl(189, 51%, 53%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(40, 18%, 86%);
+  --secondary-foreground: hsl(0, 0%, 15%);
+  --accent: hsl(40, 18%, 86%);
+  --accent-foreground: hsl(0, 0%, 15%);
+  --destructive: hsl(0, 60%, 40%);
+  --destructive-foreground: hsl(40, 23%, 91%);
+  --ring: hsl(189, 51%, 53%);
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -62,8 +62,17 @@
   }
 
   html, body, #root {
-    @apply antialiased bg-background text-foreground;
-    font-family: "夏蝉丸ゴシック", "源暎Nuゴシック", "GenEi Nu Gothic", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
+    @apply antialiased bg-background text-foreground font-bold;
+    font-family: "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, sans-serif;
     min-height: 100vh;
   }
+}
+
+/* Retro section headers */
+.section-header {
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(0, 0%, 40%);
 }
