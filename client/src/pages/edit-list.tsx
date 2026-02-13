@@ -304,7 +304,7 @@ export default function EditList() {
           <p className="section-header mb-4">リスト名</p>
           <div className="border-t border-foreground/30 pt-4">
             <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="flex gap-3">
+              <form className="flex gap-3">
                 <FormField
                   control={editForm.control}
                   name="listName"
@@ -320,13 +320,6 @@ export default function EditList() {
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="submit"
-                  className="bg-primary text-primary-foreground"
-                  disabled={editListMutation.isPending}
-                >
-                  {editListMutation.isPending ? "更新中..." : "更新"}
-                </Button>
               </form>
             </Form>
             <p className="text-sm text-muted-foreground mt-2">{region}</p>
