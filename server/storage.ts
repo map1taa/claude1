@@ -191,6 +191,14 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
+  async updateSpot(userId: string, spotId: number, data: { placeName?: string; url?: string; comment?: string }): Promise<boolean> {
+    const result = await db
+      .update(spots)
+      .set(data)
+      .where(and(eq(spots.id, spotId), eq(spots.userId, userId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   async updateListName(userId: string, oldListName: string, newListName: string, region: string): Promise<void> {
     await db
       .update(spots)

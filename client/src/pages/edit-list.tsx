@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Trash2, MessageCircle, Link2, Plus, X } from "lucide-react";
+import { MapPin, Edit2, Trash2, MessageCircle, Link2, Plus, X } from "lucide-react";
 import { useLocation } from "wouter";
 
 type FormData = {
@@ -20,11 +19,117 @@ type FormData = {
   comment: string;
 };
 
+function EditSpotOverlay({
+  spot,
+  onClose,
+  onSave,
+  onDelete,
+  isPending,
+}: {
+  spot: Spot & { user: User };
+  onClose: () => void;
+  onSave: (data: { placeName: string; url: string; comment: string }) => void;
+  onDelete: () => void;
+  isPending: boolean;
+}) {
+  const [placeName, setPlaceName] = useState(spot.placeName || "");
+  const [url, setUrl] = useState(spot.url || "");
+  const [comment, setComment] = useState(spot.comment || "");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-background border-2 border-foreground rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold">場所を編集</h3>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="flex items-center font-bold text-sm mb-2">
+              <Link2 className="mr-1 h-4 w-4" />
+              URL
+            </label>
+            <Input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="px-3 py-2 border-2 border-foreground bg-background"
+            />
+          </div>
+          <div>
+            <label className="flex items-center font-bold text-sm mb-2">
+              <MapPin className="mr-1 h-4 w-4" />
+              場所名
+            </label>
+            <Input
+              value={placeName}
+              onChange={(e) => setPlaceName(e.target.value)}
+              placeholder="例：スターバックス コーヒー 渋谷店"
+              className="px-3 py-2 border-2 border-foreground bg-background"
+            />
+          </div>
+          <div>
+            <label className="flex items-center font-bold text-sm mb-2">
+              <MessageCircle className="mr-1 h-4 w-4" />
+              コメント
+            </label>
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="この場所についてのコメントを入力..."
+              className="px-3 py-2 border-2 border-foreground bg-background"
+            />
+          </div>
+          <Button
+            onClick={() => onSave({ placeName, url, comment })}
+            className="w-full py-3 font-bold tracking-wide bg-primary text-primary-foreground"
+            disabled={isPending}
+          >
+            {isPending ? "更新中..." : "更新"}
+          </Button>
+          {!showDeleteConfirm ? (
+            <Button
+              variant="ghost"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full text-destructive hover:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              この場所を削除
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 border-2 border-foreground"
+              >
+                キャンセル
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={onDelete}
+                className="flex-1"
+              >
+                削除する
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EditList() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingSpot, setEditingSpot] = useState<(Spot & { user: User }) | null>(null);
 
   // Get list info from sessionStorage
   const listData = JSON.parse(sessionStorage.getItem('editingList') || '{}');
@@ -102,6 +207,25 @@ export default function EditList() {
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+
+  // Update spot mutation
+  const updateSpotMutation = useMutation({
+    mutationFn: async (data: { id: number; placeName: string; url: string; comment: string }): Promise<void> => {
+      await apiRequest("PUT", `/api/spots/${data.id}`, {
+        placeName: data.placeName,
+        url: data.url,
+        comment: data.comment,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
+      setEditingSpot(null);
+      toast({ title: "場所が更新されました" });
+    },
+    onError: (error) => {
+      toast({ title: "エラー", description: error.message, variant: "destructive" });
     },
   });
 
@@ -246,27 +370,9 @@ export default function EditList() {
                         <p className="text-sm text-muted-foreground mt-1">{spot.comment}</p>
                       </div>
                       {(user as any)?.id === spot.userId && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="border-2 border-foreground">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>スポットを削除</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                このスポットを削除してもよろしいですか？この操作は取り消せません。
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="border-2 border-foreground">キャンセル</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(spot.id)}>
-                                削除
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button variant="ghost" size="sm" onClick={() => setEditingSpot(spot)}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -288,6 +394,20 @@ export default function EditList() {
           </Button>
         </div>
       </div>
+
+      {/* Edit Spot Overlay */}
+      {editingSpot && (
+        <EditSpotOverlay
+          spot={editingSpot}
+          onClose={() => setEditingSpot(null)}
+          onSave={(data) => updateSpotMutation.mutate({ id: editingSpot.id, ...data })}
+          onDelete={() => {
+            deleteSpotMutation.mutate(editingSpot.id);
+            setEditingSpot(null);
+          }}
+          isPending={updateSpotMutation.isPending}
+        />
+      )}
 
       {/* Add Place Overlay */}
       {showAddForm && (

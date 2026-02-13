@@ -219,6 +219,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update a spot
+  app.put("/api/spots/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid spot ID" });
+      }
+
+      const { placeName, url, comment } = req.body;
+      const updated = await storage.updateSpot(userId, id, { placeName, url, comment });
+      if (updated) {
+        res.json({ message: "Spot updated successfully" });
+      } else {
+        res.status(404).json({ message: "Spot not found or not authorized" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update spot" });
+    }
+  });
+
   // Extract store info from URL
   app.post("/api/extract-url", isAuthenticated, async (req, res) => {
     try {
