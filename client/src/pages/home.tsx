@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Edit2, LogOut, Edit, X } from "lucide-react";
+import { Plus, Edit2, LogOut, Edit, X, Home as HomeIcon } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function Home() {
@@ -72,12 +72,12 @@ export default function Home() {
       <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
-            <h1
+            <button
               onClick={() => setViewingList(null)}
-              className="text-xl font-bold cursor-pointer hover:opacity-70 transition-opacity tracking-wider"
+              className="cursor-pointer hover:opacity-70 transition-opacity"
             >
-              あしあと
-            </h1>
+              <HomeIcon className="h-6 w-6" />
+            </button>
 
             {isAuthenticated && (
               <Button

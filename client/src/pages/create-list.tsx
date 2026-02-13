@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { Home as HomeIcon } from "lucide-react";
 
 const listFormSchema = z.object({
   listName: z.string().min(1, "リスト名を入力してください"),
@@ -42,12 +43,12 @@ export default function CreateList() {
       <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
-            <h1
+            <button
               onClick={() => setLocation('/')}
-              className="text-xl font-bold cursor-pointer hover:opacity-70 transition-opacity tracking-wider"
+              className="cursor-pointer hover:opacity-70 transition-opacity"
             >
-              あしあと
-            </h1>
+              <HomeIcon className="h-6 w-6" />
+            </button>
           </div>
         </div>
       </header>

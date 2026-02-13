@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { MapPin, Edit2, Trash2, MessageCircle, Link2, Plus, X } from "lucide-react";
+import { MapPin, Edit2, Trash2, MessageCircle, Link2, Plus, X, Home as HomeIcon } from "lucide-react";
 import { useLocation } from "wouter";
 
 type FormData = {
@@ -287,12 +287,12 @@ export default function EditList() {
       <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
-            <h1
+            <button
               onClick={() => setLocation('/')}
-              className="text-xl font-bold cursor-pointer hover:opacity-70 transition-opacity tracking-wider"
+              className="cursor-pointer hover:opacity-70 transition-opacity"
             >
-              あしあと
-            </h1>
+              <HomeIcon className="h-6 w-6" />
+            </button>
           </div>
         </div>
       </header>
