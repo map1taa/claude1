@@ -177,7 +177,7 @@ export default function Home() {
         ) : (
           <>
             {/* Profile Section */}
-            <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-foreground">
+            <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-14 w-14">
                   <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
@@ -204,9 +204,9 @@ export default function Home() {
             {/* リスト一覧の表示 */}
             <div>
               <div className="mb-4">
-                <p className="section-header">作成済みリスト一覧</p>
+                <p className="text-lg font-bold">作成済みリスト一覧</p>
               </div>
-              <div className="border-t-2 border-foreground">
+              <div>
                 {spots.length === 0 ? (
                   <p className="text-muted-foreground text-sm pt-4">まだリストがありません</p>
                 ) : (
