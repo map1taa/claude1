@@ -2,25 +2,25 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateProfileSchema, type Spot, type User, type UpdateProfile } from "@shared/schema";
+import { updateProfileSchema, insertSpotSchema, type Spot, type User, type UpdateProfile, type InsertSpot } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, Edit2, LogOut, Edit, X, Home as HomeIcon } from "lucide-react";
-import { Link, useLocation } from "wouter";
+import { Plus, LogOut, Edit, X, Home as HomeIcon, MapPin, MessageCircle, Link2 } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-
   // State management
   const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [showAddSpot, setShowAddSpot] = useState(false);
 
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
@@ -61,6 +61,51 @@ export default function Home() {
     },
     onError: () => {
       toast({ title: "エラー", description: "プロフィールの更新に失敗しました", variant: "destructive" });
+    },
+  });
+
+  // Spot addition form
+  const spotForm = useForm<{ placeName: string; url: string; comment: string }>({
+    resolver: zodResolver(insertSpotSchema.pick({ placeName: true, url: true, comment: true })),
+    defaultValues: { placeName: "", url: "", comment: "" },
+  });
+
+  // URL extraction mutation
+  const extractUrlMutation = useMutation({
+    mutationFn: async (url: string): Promise<{ storeName?: string; prefecture?: string }> => {
+      const response = await apiRequest("POST", "/api/extract-url", { url });
+      return await response.json() as { storeName?: string; prefecture?: string };
+    },
+    onSuccess: (data: { storeName?: string; prefecture?: string }) => {
+      if (data.storeName && data.storeName.trim()) {
+        spotForm.setValue("placeName", data.storeName.trim());
+      }
+    },
+  });
+
+  const handleUrlChange = (url: string) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://')) &&
+        (url.includes('tabelog.com') || url.includes('maps.app.goo.gl') ||
+         url.includes('google.com/maps') || url.includes('gnavi.co.jp') ||
+         url.includes('hotpepper.jp'))) {
+      extractUrlMutation.mutate(url);
+    }
+  };
+
+  // Create spot mutation
+  const createSpotMutation = useMutation({
+    mutationFn: async (data: InsertSpot): Promise<Spot> => {
+      const response = await apiRequest("POST", "/api/spots", data);
+      return await response.json() as Spot;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
+      spotForm.reset();
+      setShowAddSpot(false);
+      toast({ title: "場所が追加されました" });
+    },
+    onError: (error) => {
+      toast({ title: "エラー", description: error.message, variant: "destructive" });
     },
   });
 
@@ -159,16 +204,12 @@ export default function Home() {
               {/* 下部ボタン */}
               <div className="flex justify-center mt-10">
                 <Button
-                  variant="outline"
-                  onClick={() => {
-                    sessionStorage.setItem('editingList', JSON.stringify({ listName: viewingList.listName, region: viewingList.region }));
-                    setLocation('/edit-list');
-                  }}
+                  onClick={() => setShowAddSpot(true)}
                   className="bg-primary text-primary-foreground px-8"
                   size="lg"
                 >
-                  <Edit2 className="mr-2 h-5 w-5" />
-                  編集
+                  <Plus className="mr-2 h-5 w-5" />
+                  場所を追加
                 </Button>
               </div>
             </div>
@@ -217,26 +258,14 @@ export default function Home() {
                         return acc;
                       }, {} as Record<string, { listName: string; region: string; count: number }>)
                     ).map(([key, list]) => (
-                      <div key={key} className="w-full flex items-center border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors">
-                        <button
-                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
-                          className="flex-1 text-left"
-                        >
-                          <h3 className="text-lg font-bold">{list.listName}</h3>
-                          <p className="text-sm text-muted-foreground">{list.region}</p>
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="ml-2 p-1"
-                          onClick={() => {
-                            sessionStorage.setItem('editingList', JSON.stringify({ listName: list.listName, region: list.region }));
-                            setLocation('/edit-list');
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <button
+                        key={key}
+                        onClick={() => setViewingList({ listName: list.listName, region: list.region })}
+                        className="w-full border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+                      >
+                        <h3 className="text-lg font-bold">{list.listName}</h3>
+                        <p className="text-sm text-muted-foreground">{list.region}</p>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -257,6 +286,109 @@ export default function Home() {
           </>
         )}
       </div>
+
+      {/* Add Spot Overlay */}
+      {showAddSpot && viewingList && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAddSpot(false)} />
+          <div className="relative bg-background border-2 border-foreground rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">場所を追加</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowAddSpot(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <Form {...spotForm}>
+              <form onSubmit={spotForm.handleSubmit((data) => {
+                createSpotMutation.mutate({
+                  ...data,
+                  listName: viewingList.listName,
+                  region: viewingList.region,
+                });
+              })} className="space-y-4">
+                <FormField
+                  control={spotForm.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center font-bold">
+                        <Link2 className="mr-1 h-4 w-4" />
+                        URL <span className="text-xs text-muted-foreground ml-2 font-normal">(場所の情報を自動入力)</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="https://example.com"
+                            className="px-3 py-2 border-2 border-foreground bg-background"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              handleUrlChange(e.target.value);
+                            }}
+                          />
+                          {extractUrlMutation.isPending && (
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                              <div className="animate-spin h-4 w-4 border-b-2 border-foreground"></div>
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={spotForm.control}
+                  name="placeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center font-bold">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        場所名
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="例：スターバックス コーヒー 渋谷店"
+                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={spotForm.control}
+                  name="comment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center font-bold">
+                        <MessageCircle className="mr-1 h-4 w-4" />
+                        コメント
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="この場所についてのコメントを入力..."
+                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full py-3 font-bold tracking-wide bg-primary text-primary-foreground"
+                  disabled={createSpotMutation.isPending}
+                >
+                  {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+        </div>
+      )}
 
       {/* Profile Edit Overlay */}
       {showProfileEdit && (
