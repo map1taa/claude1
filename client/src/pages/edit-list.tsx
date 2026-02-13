@@ -393,6 +393,20 @@ export default function EditList() {
             場所を追加
           </Button>
         </div>
+
+        {/* Save Button */}
+        <div className="flex justify-center mt-6">
+          <Button
+            onClick={() => {
+              editForm.handleSubmit(onEditSubmit)();
+            }}
+            className="bg-primary text-primary-foreground px-8"
+            size="lg"
+            disabled={editListMutation.isPending}
+          >
+            {editListMutation.isPending ? "保存中..." : "保存"}
+          </Button>
+        </div>
       </div>
 
       {/* Edit Spot Overlay */}
