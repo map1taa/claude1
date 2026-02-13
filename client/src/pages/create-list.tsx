@@ -27,14 +27,13 @@ export default function CreateList() {
   });
 
   const onSubmit = (data: ListFormData) => {
-    sessionStorage.setItem('newListToView', JSON.stringify(data));
+    sessionStorage.setItem('editingList', JSON.stringify({ listName: data.listName, region: data.region }));
 
     toast({
       title: "リストが作成されました",
-      description: `${data.listName} (${data.region}) への場所の追加を開始してください。`,
     });
 
-    setLocation('/');
+    setLocation('/edit-list');
   };
 
   return (
