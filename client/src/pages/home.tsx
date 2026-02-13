@@ -203,9 +203,6 @@ export default function Home() {
 
             {/* リスト一覧の表示 */}
             <div>
-              <div className="mb-4">
-                <p className="text-lg font-bold">作成済みリスト一覧</p>
-              </div>
               <div>
                 {spots.length === 0 ? (
                   <p className="text-muted-foreground text-sm pt-4">まだリストがありません</p>
