@@ -9,6 +9,7 @@ import Profile from "@/pages/profile";
 import CreateList from "@/pages/create-list";
 import EditList from "@/pages/edit-list";
 import Landing from "@/pages/landing";
+import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,7 +26,10 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/auth" component={Auth} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type Spot, type User } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -76,11 +77,13 @@ export default function Home() {
                         プロフィール
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="/api/logout">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        ログアウト
-                      </a>
+                    <DropdownMenuItem onClick={async () => {
+                      await apiRequest("POST", "/api/auth/logout");
+                      queryClient.clear();
+                      window.location.href = "/";
+                    }}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      ログアウト
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

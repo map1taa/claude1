@@ -14,7 +14,7 @@ export default function Landing() {
               </h1>
             </div>
             <Button asChild className="bg-primary text-primary-foreground font-bold">
-              <a href="/api/login">
+              <a href="/auth">
                 ログインして始める
               </a>
             </Button>
@@ -35,7 +35,7 @@ export default function Landing() {
             友達のおすすめスポットもチェックして、新しい発見を楽しもう。
           </p>
           <Button size="lg" asChild className="bg-primary text-primary-foreground font-bold tracking-wide px-8">
-            <a href="/api/login">
+            <a href="/auth">
               <MapPin className="mr-2 h-5 w-5" />
               今すぐ始める
             </a>
@@ -117,7 +117,7 @@ export default function Landing() {
             無料で利用できます。
           </p>
           <Button size="lg" variant="outline" asChild className="border-2 border-background text-background hover:bg-background hover:text-foreground font-bold px-8">
-            <a href="/api/login">
+            <a href="/auth">
               <Star className="mr-2 h-5 w-5" />
               無料で始める
             </a>
