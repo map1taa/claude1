@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
 
 const listFormSchema = z.object({
@@ -39,7 +38,7 @@ export default function CreateList() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
         <div className="container mx-auto px-4">
@@ -55,55 +54,56 @@ export default function CreateList() {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="listName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="flex items-center gap-3">
-                      <Plus className="h-6 w-6 shrink-0" />
-                      <Input
-                        placeholder="新しいリスト名を入力"
-                        className="px-3 py-2 border-2 border-foreground bg-background text-lg"
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-2xl">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="flex items-center gap-3">
+                <FormField
+                  control={form.control}
+                  name="listName"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          placeholder="タイトル"
+                          className="px-3 py-2 border-2 border-foreground bg-background text-lg"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <span className="text-xl font-bold shrink-0">/</span>
+                <FormField
+                  control={form.control}
+                  name="region"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          placeholder="場所名"
+                          className="px-3 py-2 border-2 border-foreground bg-background text-lg"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <FormField
-              control={form.control}
-              name="region"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder="地域を入力（例：東京都、韓国）"
-                      className="px-3 py-2 border-2 border-foreground bg-background text-lg"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground font-bold tracking-wide"
-              size="lg"
-            >
-              リストを作成
-            </Button>
-          </form>
-        </Form>
+              <Button
+                type="submit"
+                className="w-full bg-primary text-primary-foreground font-bold tracking-wide"
+                size="lg"
+              >
+                リストを作成
+              </Button>
+            </form>
+          </Form>
+        </div>
       </div>
     </div>
   );
