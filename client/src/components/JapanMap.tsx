@@ -1,43 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import type { Spot, User } from "@shared/schema";
-import { JAPAN_VIEWBOX, PREFECTURES, BOUNDARY_PATH } from "./japanPaths";
+import { JAPAN_VIEWBOX, PREFECTURES, BOUNDARY_POINTS } from "./japanPaths";
 
 interface JapanMapProps {
   spots: (Spot & { user: User })[];
   onPrefectureClick: (prefecture: string) => void;
 }
 
-// Calculate center + font size of each prefecture's bounding box from its path
-function getPathBBox(d: string): { cx: number; cy: number; w: number; h: number } {
-  const nums = d.match(/-?[\d.]+/g)?.map(Number) || [];
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let i = 0; i < nums.length - 1; i += 2) {
-    const x = nums[i], y = nums[i + 1];
-    if (x < 2000 && y < 2000) {
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    }
-  }
-  return {
-    cx: (minX + maxX) / 2,
-    cy: (minY + maxY) / 2,
-    w: maxX - minX,
-    h: maxY - minY,
-  };
-}
-
 export default function JapanMap({ spots, onPrefectureClick }: JapanMapProps) {
   const [hoveredPref, setHoveredPref] = useState<string | null>(null);
-
-  const prefBBoxes = useMemo(() => {
-    const map = new Map<string, { cx: number; cy: number; w: number; h: number }>();
-    PREFECTURES.forEach((p) => {
-      map.set(p.name, getPathBBox(p.d));
-    });
-    return map;
-  }, []);
 
   return (
     <div className="w-full relative">
@@ -45,11 +16,11 @@ export default function JapanMap({ spots, onPrefectureClick }: JapanMapProps) {
         <svg
           viewBox={JAPAN_VIEWBOX}
           xmlns="http://www.w3.org/2000/svg"
-          className="w-full max-w-[340px] block"
+          className="w-full max-w-[520px] block"
         >
-          {/* Boundary line (Okinawa) */}
-          <path
-            d={BOUNDARY_PATH}
+          {/* Boundary line (Okinawa → Kyushu) */}
+          <polyline
+            points={`${BOUNDARY_POINTS.x3},${BOUNDARY_POINTS.y3} ${BOUNDARY_POINTS.x2},${BOUNDARY_POINTS.y2} ${BOUNDARY_POINTS.x1},${BOUNDARY_POINTS.y1}`}
             fill="none"
             stroke="#ccc"
             strokeWidth="2"
@@ -58,10 +29,7 @@ export default function JapanMap({ spots, onPrefectureClick }: JapanMapProps) {
           {/* Prefectures */}
           {PREFECTURES.map((pref) => {
             const isHovered = hoveredPref === pref.name;
-            const bbox = prefBBoxes.get(pref.name);
-            const fontSize = bbox
-              ? Math.min(bbox.w * 0.35, bbox.h * 0.3, 22)
-              : 16;
+            const fontSize = Math.min(pref.w * 0.35, pref.h * 0.35, 24);
 
             return (
               <g
@@ -71,31 +39,31 @@ export default function JapanMap({ spots, onPrefectureClick }: JapanMapProps) {
                 onMouseLeave={() => setHoveredPref(null)}
                 style={{ cursor: "pointer" }}
               >
-                <path
-                  d={pref.d}
+                <rect
+                  x={pref.x}
+                  y={pref.y}
+                  width={pref.w}
+                  height={pref.h}
                   fill={isHovered ? "#f97316" : "#f5f5f5"}
-                  stroke="#999"
+                  stroke="#222"
                   strokeWidth="2"
-                  strokeLinejoin="round"
                   style={{ transition: "fill 100ms" }}
                 />
-                {bbox && (
-                  <text
-                    x={bbox.cx}
-                    y={bbox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={fontSize}
-                    fill={isHovered ? "#fff" : "#333"}
-                    style={{
-                      pointerEvents: "none",
-                      fontWeight: 600,
-                      transition: "fill 100ms",
-                    }}
-                  >
-                    {pref.name}
-                  </text>
-                )}
+                <text
+                  x={pref.x + pref.w / 2}
+                  y={pref.y + pref.h / 2}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={fontSize}
+                  fill={isHovered ? "#fff" : "#333"}
+                  style={{
+                    pointerEvents: "none",
+                    fontWeight: 600,
+                    transition: "fill 100ms",
+                  }}
+                >
+                  {pref.name}
+                </text>
               </g>
             );
           })}
