@@ -1,73 +1,65 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import type { Spot, User } from "@shared/schema";
 
-const PREFECTURES = [
-  // 北海道・東北
-  { name: "北海道", region: "北海道" },
-  { name: "青森", region: "東北" },
-  { name: "岩手", region: "東北" },
-  { name: "宮城", region: "東北" },
-  { name: "秋田", region: "東北" },
-  { name: "山形", region: "東北" },
-  { name: "福島", region: "東北" },
+// Grid positions to approximate Japan's shape (col, row) on a 13-col x 15-row grid
+const PREFECTURES: { name: string; col: number; row: number }[] = [
+  // 北海道
+  { name: "北海道", col: 10, row: 0 },
+  // 東北
+  { name: "青森",   col: 10, row: 2 },
+  { name: "秋田",   col: 9,  row: 3 },
+  { name: "岩手",   col: 10, row: 3 },
+  { name: "山形",   col: 9,  row: 4 },
+  { name: "宮城",   col: 10, row: 4 },
+  { name: "福島",   col: 9,  row: 5 },
   // 関東
-  { name: "茨城", region: "関東" },
-  { name: "栃木", region: "関東" },
-  { name: "群馬", region: "関東" },
-  { name: "埼玉", region: "関東" },
-  { name: "千葉", region: "関東" },
-  { name: "東京", region: "関東" },
-  { name: "神奈川", region: "関東" },
+  { name: "新潟",   col: 8,  row: 4 },
+  { name: "群馬",   col: 8,  row: 5 },
+  { name: "栃木",   col: 9,  row: 6 },
+  { name: "茨城",   col: 10, row: 6 },
+  { name: "埼玉",   col: 8,  row: 6 },
+  { name: "東京",   col: 8,  row: 7 },
+  { name: "千葉",   col: 9,  row: 7 },
+  { name: "神奈川", col: 8,  row: 8 },
+  { name: "山梨",   col: 7,  row: 7 },
   // 中部
-  { name: "新潟", region: "中部" },
-  { name: "富山", region: "中部" },
-  { name: "石川", region: "中部" },
-  { name: "福井", region: "中部" },
-  { name: "山梨", region: "中部" },
-  { name: "長野", region: "中部" },
-  { name: "岐阜", region: "中部" },
-  { name: "静岡", region: "中部" },
-  { name: "愛知", region: "中部" },
+  { name: "長野",   col: 7,  row: 6 },
+  { name: "富山",   col: 7,  row: 5 },
+  { name: "石川",   col: 6,  row: 5 },
+  { name: "福井",   col: 6,  row: 6 },
+  { name: "岐阜",   col: 6,  row: 7 },
+  { name: "静岡",   col: 7,  row: 8 },
+  { name: "愛知",   col: 6,  row: 8 },
   // 近畿
-  { name: "三重", region: "近畿" },
-  { name: "滋賀", region: "近畿" },
-  { name: "京都", region: "近畿" },
-  { name: "大阪", region: "近畿" },
-  { name: "兵庫", region: "近畿" },
-  { name: "奈良", region: "近畿" },
-  { name: "和歌山", region: "近畿" },
+  { name: "三重",   col: 5,  row: 8 },
+  { name: "滋賀",   col: 5,  row: 7 },
+  { name: "京都",   col: 5,  row: 6 },
+  { name: "奈良",   col: 4,  row: 8 },
+  { name: "大阪",   col: 4,  row: 7 },
+  { name: "兵庫",   col: 4,  row: 6 },
+  { name: "和歌山", col: 4,  row: 9 },
   // 中国
-  { name: "鳥取", region: "中国" },
-  { name: "島根", region: "中国" },
-  { name: "岡山", region: "中国" },
-  { name: "広島", region: "中国" },
-  { name: "山口", region: "中国" },
+  { name: "鳥取",   col: 3,  row: 6 },
+  { name: "島根",   col: 2,  row: 6 },
+  { name: "岡山",   col: 3,  row: 7 },
+  { name: "広島",   col: 2,  row: 7 },
+  { name: "山口",   col: 1,  row: 7 },
   // 四国
-  { name: "徳島", region: "四国" },
-  { name: "香川", region: "四国" },
-  { name: "愛媛", region: "四国" },
-  { name: "高知", region: "四国" },
-  // 九州・沖縄
-  { name: "福岡", region: "九州" },
-  { name: "佐賀", region: "九州" },
-  { name: "長崎", region: "九州" },
-  { name: "熊本", region: "九州" },
-  { name: "大分", region: "九州" },
-  { name: "宮崎", region: "九州" },
-  { name: "鹿児島", region: "九州" },
-  { name: "沖縄", region: "九州" },
+  { name: "香川",   col: 3,  row: 8 },
+  { name: "徳島",   col: 3,  row: 9 },
+  { name: "愛媛",   col: 2,  row: 8 },
+  { name: "高知",   col: 2,  row: 9 },
+  // 九州
+  { name: "福岡",   col: 1,  row: 8 },
+  { name: "大分",   col: 1,  row: 9 },
+  { name: "佐賀",   col: 0,  row: 8 },
+  { name: "長崎",   col: 0,  row: 9 },
+  { name: "熊本",   col: 0,  row: 10 },
+  { name: "宮崎",   col: 1,  row: 10 },
+  { name: "鹿児島", col: 0,  row: 11 },
+  // 沖縄
+  { name: "沖縄",   col: 0,  row: 13 },
 ];
-
-const REGION_COLORS: Record<string, { bg: string; active: string }> = {
-  "北海道": { bg: "bg-sky-100", active: "bg-sky-400" },
-  "東北":   { bg: "bg-emerald-100", active: "bg-emerald-400" },
-  "関東":   { bg: "bg-orange-100", active: "bg-orange-400" },
-  "中部":   { bg: "bg-yellow-100", active: "bg-yellow-400" },
-  "近畿":   { bg: "bg-rose-100", active: "bg-rose-400" },
-  "中国":   { bg: "bg-purple-100", active: "bg-purple-400" },
-  "四国":   { bg: "bg-teal-100", active: "bg-teal-400" },
-  "九州":   { bg: "bg-pink-100", active: "bg-pink-400" },
-};
 
 interface JapanMapProps {
   spots: (Spot & { user: User })[];
@@ -75,47 +67,72 @@ interface JapanMapProps {
 }
 
 export default function JapanMap({ spots, onPrefectureClick }: JapanMapProps) {
-  // Count spots per prefecture (using region field which stores prefecture/area)
-  const spotCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    spots.forEach((spot) => {
-      const region = spot.region || "";
-      counts[region] = (counts[region] || 0) + 1;
-    });
-    return counts;
-  }, [spots]);
+  const [hoveredPref, setHoveredPref] = useState<string | null>(null);
+
+  // Build grid lookup
+  const gridMap = new Map<string, typeof PREFECTURES[0]>();
+  let maxCol = 0;
+  let maxRow = 0;
+  PREFECTURES.forEach((p) => {
+    gridMap.set(`${p.col}-${p.row}`, p);
+    if (p.col > maxCol) maxCol = p.col;
+    if (p.row > maxRow) maxRow = p.row;
+  });
+
+  const cols = maxCol + 1;
+  const rows = maxRow + 1;
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-7 gap-1.5">
-        {PREFECTURES.map((pref) => {
-          const count = spotCounts[pref.name] || 0;
-          const hasSpots = count > 0;
-          const colors = REGION_COLORS[pref.region];
+    <div className="w-full relative">
+      {/* Tooltip */}
+      {hoveredPref && (
+        <div className="text-center mb-2">
+          <span className="bg-foreground text-background text-xs px-3 py-1 rounded">
+            {hoveredPref}
+          </span>
+        </div>
+      )}
+      {!hoveredPref && <div className="h-6 mb-2" />}
+      <div className="flex justify-center">
+        <div
+          className="inline-grid gap-[2px]"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+            width: "min(100%, 260px)",
+          }}
+        >
+          {Array.from({ length: rows }, (_, row) =>
+            Array.from({ length: cols }, (_, col) => {
+              const key = `${col}-${row}`;
+              const pref = gridMap.get(key);
 
-          return (
-            <button
-              key={pref.name}
-              onClick={() => onPrefectureClick(pref.name)}
-              className={`
-                relative rounded-md p-1 text-center transition-all duration-150
-                hover:scale-110 hover:shadow-md active:scale-95
-                border border-foreground/20
-                ${hasSpots ? colors.active + " text-white font-bold" : colors.bg + " text-foreground/70"}
-              `}
-              style={{ aspectRatio: "1" }}
-            >
-              <span className="text-[10px] leading-tight block">
-                {pref.name}
-              </span>
-              {hasSpots && (
-                <span className="text-[8px] leading-none block mt-0.5">
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+              if (!pref) {
+                return <div key={key} />;
+              }
+
+              const isHovered = hoveredPref === pref.name;
+
+              return (
+                <button
+                  key={key}
+                  onClick={() => onPrefectureClick(pref.name)}
+                  onMouseEnter={() => setHoveredPref(pref.name)}
+                  onMouseLeave={() => setHoveredPref(null)}
+                  title={pref.name}
+                  className="transition-colors duration-100"
+                  style={{
+                    aspectRatio: "1",
+                    border: "1.5px solid #000",
+                    borderRadius: "2px",
+                    backgroundColor: isHovered ? "#f97316" : "transparent",
+                    cursor: "pointer",
+                  }}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
