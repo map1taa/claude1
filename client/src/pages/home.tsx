@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, LogOut, Edit, X, Home as HomeIcon, MapPin, MessageCircle, Link2 } from "lucide-react";
 import { Link } from "wouter";
+import JapanMap from "@/components/JapanMap";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -21,6 +22,7 @@ export default function Home() {
   const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSpot, setShowAddSpot] = useState(false);
+  const [selectedPrefecture, setSelectedPrefecture] = useState<string | null>(null);
 
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
@@ -118,7 +120,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
             <button
-              onClick={() => setViewingList(null)}
+              onClick={() => { setViewingList(null); setSelectedPrefecture(null); }}
               className="cursor-pointer hover:opacity-70 transition-opacity"
             >
               <HomeIcon className="h-6 w-6" />
@@ -241,15 +243,25 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* リスト一覧の表示 */}
-            <div>
+            {/* 日本地図 */}
+            {selectedPrefecture ? (
               <div>
-                {spots.length === 0 ? (
-                  <p className="text-muted-foreground text-sm pt-4">まだリストがありません</p>
-                ) : (
-                  <div className="space-y-3 pt-3">
-                    {Object.entries(
-                      spots.reduce((acc, spot) => {
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold">{selectedPrefecture}</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedPrefecture(null)}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    戻る
+                  </Button>
+                </div>
+                {(() => {
+                  const prefLists = Object.entries(
+                    spots
+                      .filter(spot => spot.region === selectedPrefecture)
+                      .reduce((acc, spot) => {
                         const key = `${spot.listName}-${spot.region}`;
                         if (!acc[key]) {
                           acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
@@ -257,30 +269,59 @@ export default function Home() {
                         acc[key].count++;
                         return acc;
                       }, {} as Record<string, { listName: string; region: string; count: number }>)
-                    ).map(([key, list]) => (
-                      <button
-                        key={key}
-                        onClick={() => setViewingList({ listName: list.listName, region: list.region })}
-                        className="w-full border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors text-left"
-                      >
-                        <h3 className="text-lg font-bold">{list.listName}</h3>
-                        <p className="text-sm text-muted-foreground">{list.region}</p>
-                      </button>
-                    ))}
+                  );
+                  return prefLists.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground text-sm mb-4">この地域にはまだリストがありません</p>
+                      <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
+                        <Link href="/create-list">
+                          <Plus className="mr-2 h-5 w-5" />
+                          リスト作成
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {prefLists.map(([key, list]) => (
+                        <button
+                          key={key}
+                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
+                          className="w-full border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+                        >
+                          <h3 className="text-lg font-bold">{list.listName}</h3>
+                          <p className="text-sm text-muted-foreground">{list.count}件</p>
+                        </button>
+                      ))}
+                      <div className="flex justify-center pt-4">
+                        <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
+                          <Link href="/create-list">
+                            <Plus className="mr-2 h-5 w-5" />
+                            リスト作成
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div>
+                <JapanMap
+                  spots={spots}
+                  onPrefectureClick={(pref) => setSelectedPrefecture(pref)}
+                />
+
+                {/* リスト作成ボタン */}
+                {isAuthenticated && (
+                  <div className="flex justify-center mt-8">
+                    <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
+                      <Link href="/create-list">
+                        <Plus className="mr-2 h-5 w-5" />
+                        リスト作成
+                      </Link>
+                    </Button>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* リスト作成ボタン */}
-            {isAuthenticated && (
-              <div className="flex justify-center mt-10">
-                <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
-                  <Link href="/create-list">
-                    <Plus className="mr-2 h-5 w-5" />
-                    リスト作成
-                  </Link>
-                </Button>
               </div>
             )}
           </>
