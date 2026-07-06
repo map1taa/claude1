@@ -24,9 +24,15 @@ export default function Home() {
   const [showAddSpot, setShowAddSpot] = useState(false);
   const [selectedPrefecture, setSelectedPrefecture] = useState<string | null>(null);
 
+  // ログイン時は自分のスポットのみ、未ログイン時は全体の公開スポットを取得
+  const userId = (user as any)?.id;
+  const spotsQueryKey = isAuthenticated && userId
+    ? [`/api/users/${userId}/spots`]
+    : ["/api/spots"];
+
   // Fetch spots
   const { data: spots = [], isLoading } = useQuery<(Spot & { user: User })[]>({
-    queryKey: ["/api/spots"],
+    queryKey: spotsQueryKey,
   });
 
   // Check for new list from create-list page and automatically view it
@@ -101,7 +107,7 @@ export default function Home() {
       return await response.json() as Spot;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/spots"] });
+      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
       spotForm.reset();
       setShowAddSpot(false);
       toast({ title: "場所が追加されました" });
