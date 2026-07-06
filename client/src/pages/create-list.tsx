@@ -9,8 +9,8 @@ import { useLocation } from "wouter";
 import { Home as HomeIcon } from "lucide-react";
 
 const listFormSchema = z.object({
-  listName: z.string().min(1, "リスト名を入力してください"),
-  region: z.string().min(1, "地域を選択してください"),
+  listName: z.string().min(1, "ジャンルを入力してください"),
+  region: z.string().min(1, "場所名を入力してください"),
 });
 
 type ListFormData = z.infer<typeof listFormSchema>;
@@ -58,15 +58,15 @@ export default function CreateList() {
         <div className="w-full max-w-2xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <FormField
                   control={form.control}
-                  name="listName"
+                  name="region"
                   render={({ field }) => (
-                    <FormItem className="flex-1">
+                    <FormItem className="flex-1 min-w-[7rem]">
                       <FormControl>
                         <Input
-                          placeholder="タイトル"
+                          placeholder="場所名"
                           className="px-3 py-2 border-2 border-foreground bg-background text-lg"
                           {...field}
                         />
@@ -75,15 +75,15 @@ export default function CreateList() {
                     </FormItem>
                   )}
                 />
-                <span className="text-xl font-bold shrink-0">/</span>
+                <span className="text-lg font-bold shrink-0">でおすすめの</span>
                 <FormField
                   control={form.control}
-                  name="region"
+                  name="listName"
                   render={({ field }) => (
-                    <FormItem className="flex-1">
+                    <FormItem className="flex-1 min-w-[7rem]">
                       <FormControl>
                         <Input
-                          placeholder="場所名"
+                          placeholder="ジャンル"
                           className="px-3 py-2 border-2 border-foreground bg-background text-lg"
                           {...field}
                         />
