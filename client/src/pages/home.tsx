@@ -168,6 +168,21 @@ export default function Home() {
     },
   });
 
+  const deleteSpotMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingSpot) return;
+      await apiRequest("DELETE", `/api/spots/${editingSpot.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      setEditingSpot(null);
+      toast({ title: "削除しました" });
+    },
+    onError: (error) => {
+      toast({ title: "エラー", description: error.message, variant: "destructive" });
+    },
+  });
+
   const displayName = (user as any)?.username || (user as any)?.firstName || "ユーザー";
 
   return (
@@ -402,7 +417,7 @@ export default function Home() {
       {showAddSpot && viewingList && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowAddSpot(false)} />
-          <div className="relative bg-background border-2 border-foreground rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold">場所を追加</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowAddSpot(false)}>
@@ -430,7 +445,7 @@ export default function Home() {
                         <div className="relative">
                           <Input
                             placeholder="https://example.com"
-                            className="px-3 py-2 border-2 border-foreground bg-background"
+                            className="px-3 py-2 border-2 border-black bg-white rounded-xl"
                             {...field}
                             onChange={(e) => {
                               field.onChange(e);
@@ -460,7 +475,7 @@ export default function Home() {
                       <FormControl>
                         <Input
                           placeholder="例：スターバックス コーヒー 渋谷店"
-                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl"
                           {...field}
                         />
                       </FormControl>
@@ -480,7 +495,7 @@ export default function Home() {
                       <FormControl>
                         <Textarea
                           placeholder="この場所についてのコメントを入力..."
-                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl"
                           {...field}
                         />
                       </FormControl>
@@ -490,7 +505,7 @@ export default function Home() {
                 />
                 <Button
                   type="submit"
-                  className="w-full py-3 font-bold tracking-wide bg-primary text-primary-foreground"
+                  className="w-full py-3 font-bold tracking-wide bg-black text-white hover:bg-black/80 rounded-xl"
                   disabled={createSpotMutation.isPending}
                 >
                   {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
@@ -565,7 +580,7 @@ export default function Home() {
       {editingSpot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setEditingSpot(null)} />
-          <div className="relative bg-background border-2 border-foreground rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold">メモを編集</h3>
               <Button variant="ghost" size="sm" onClick={() => setEditingSpot(null)}>
@@ -586,7 +601,7 @@ export default function Home() {
                       <FormControl>
                         <Input
                           placeholder="例：スターバックス コーヒー 渋谷店"
-                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl"
                           {...field}
                         />
                       </FormControl>
@@ -606,7 +621,7 @@ export default function Home() {
                       <FormControl>
                         <Textarea
                           placeholder="この場所についてのコメントを入力..."
-                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl"
                           {...field}
                         />
                       </FormControl>
@@ -626,7 +641,7 @@ export default function Home() {
                       <FormControl>
                         <Input
                           placeholder="https://example.com"
-                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl"
                           {...field}
                         />
                       </FormControl>
@@ -634,13 +649,27 @@ export default function Home() {
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="submit"
-                  className="w-full py-3 font-bold tracking-wide bg-primary text-primary-foreground"
-                  disabled={updateSpotMutation.isPending}
-                >
-                  {updateSpotMutation.isPending ? "更新中..." : "更新"}
-                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    type="submit"
+                    className="flex-1 py-3 font-bold tracking-wide bg-black text-white hover:bg-black/80 rounded-xl"
+                    disabled={updateSpotMutation.isPending}
+                  >
+                    {updateSpotMutation.isPending ? "更新中..." : "更新"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm("このメモを削除しますか？")) {
+                        deleteSpotMutation.mutate();
+                      }
+                    }}
+                    className="py-3 px-6 font-bold tracking-wide bg-[#D64541] text-white hover:bg-[#b93b38] rounded-xl"
+                    disabled={deleteSpotMutation.isPending}
+                  >
+                    {deleteSpotMutation.isPending ? "削除中..." : "削除"}
+                  </Button>
+                </div>
               </form>
             </Form>
           </div>
