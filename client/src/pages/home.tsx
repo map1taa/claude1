@@ -386,7 +386,7 @@ export default function Home() {
               onClick={() => { setViewingList(null); setViewingFriend(null); setLocation("/"); }}
               className="cursor-pointer hover:opacity-70 transition-opacity"
             >
-              <span className="text-2xl font-black tracking-widest">レコメン</span>
+              <span className="text-2xl font-black tracking-widest">タビコミ</span>
             </button>
 
             {isAuthenticated ? (

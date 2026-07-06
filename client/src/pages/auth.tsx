@@ -37,7 +37,7 @@ export default function Auth() {
       <header className="sticky top-0 z-50 w-full bg-[#E9BC4F]">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center">
-            <h1 className="text-2xl font-black tracking-widest">レコメン</h1>
+            <h1 className="text-2xl font-black tracking-widest">タビコミ</h1>
           </div>
         </div>
       </header>
