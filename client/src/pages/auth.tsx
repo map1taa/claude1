@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -6,6 +7,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Auth() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [isLogin, setIsLogin] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -20,6 +22,8 @@ export default function Auth() {
       await apiRequest("POST", endpoint, { email: email.trim() });
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({ title: isLogin ? "ログインしました" : "アカウントを作成しました" });
+      // ログイン/登録後はホームへ遷移して自分のデータ画面に切り替える
+      setLocation("/");
     } catch (error: any) {
       const message = error?.message || (isLogin ? "ログインに失敗しました" : "登録に失敗しました");
       toast({ title: "エラー", description: message, variant: "destructive" });
