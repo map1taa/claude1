@@ -21,6 +21,7 @@ export default function Home() {
   const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSpot, setShowAddSpot] = useState(false);
+  const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
 
   // ログイン時は自分のスポットのみ、未ログイン時は全体の公開スポットを取得
   const userId = (user as any)?.id;
@@ -115,6 +116,36 @@ export default function Home() {
     },
   });
 
+  // Spot edit form
+  const editSpotForm = useForm<{ placeName: string; url: string; comment: string }>({
+    resolver: zodResolver(insertSpotSchema.pick({ placeName: true, url: true, comment: true })),
+    defaultValues: { placeName: "", url: "", comment: "" },
+  });
+
+  const openEditSpot = (spot: Spot) => {
+    editSpotForm.reset({
+      placeName: spot.placeName || "",
+      url: spot.url || "",
+      comment: spot.comment || "",
+    });
+    setEditingSpot(spot);
+  };
+
+  const updateSpotMutation = useMutation({
+    mutationFn: async (data: { placeName: string; url: string; comment: string }) => {
+      if (!editingSpot) return;
+      await apiRequest("PUT", `/api/spots/${editingSpot.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      setEditingSpot(null);
+      toast({ title: "更新しました" });
+    },
+    onError: (error) => {
+      toast({ title: "エラー", description: error.message, variant: "destructive" });
+    },
+  });
+
   const displayName = (user as any)?.username || (user as any)?.firstName || "ユーザー";
 
   return (
@@ -183,21 +214,32 @@ export default function Home() {
                       spot.listName === viewingList.listName &&
                       spot.region === viewingList.region
                     ).map((spot) => (
-                      <div key={spot.id} className="border border-black px-4 py-4">
-                        {spot.url ? (
-                          <a
-                            href={spot.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline hover:opacity-70 transition-opacity"
+                      <div key={spot.id} className="border border-black px-4 py-4 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          {spot.url ? (
+                            <a
+                              href={spot.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:opacity-70 transition-opacity"
+                            >
+                              {spot.placeName || 'タイトルなし'}
+                            </a>
+                          ) : (
+                            <span>{spot.placeName || 'タイトルなし'}</span>
+                          )}
+                          {spot.comment && (
+                            <span>・・・ {spot.comment}</span>
+                          )}
+                        </div>
+                        {isAuthenticated && (
+                          <button
+                            onClick={() => openEditSpot(spot)}
+                            aria-label="編集"
+                            className="shrink-0 text-black/50 hover:text-black transition-colors"
                           >
-                            {spot.placeName || 'タイトルなし'}
-                          </a>
-                        ) : (
-                          <span>{spot.placeName || 'タイトルなし'}</span>
-                        )}
-                        {spot.comment && (
-                          <span>・・・ {spot.comment}</span>
+                            <Edit className="h-4 w-4" />
+                          </button>
                         )}
                       </div>
                     ))}
@@ -401,6 +443,92 @@ export default function Home() {
                   disabled={createSpotMutation.isPending}
                 >
                   {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Spot Overlay */}
+      {editingSpot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setEditingSpot(null)} />
+          <div className="relative bg-background border-2 border-foreground rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">メモを編集</h3>
+              <Button variant="ghost" size="sm" onClick={() => setEditingSpot(null)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <Form {...editSpotForm}>
+              <form onSubmit={editSpotForm.handleSubmit((data) => updateSpotMutation.mutate(data))} className="space-y-4">
+                <FormField
+                  control={editSpotForm.control}
+                  name="placeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center font-bold">
+                        <MapPin className="mr-1 h-4 w-4" />
+                        場所名
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="例：スターバックス コーヒー 渋谷店"
+                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editSpotForm.control}
+                  name="comment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center font-bold">
+                        <MessageCircle className="mr-1 h-4 w-4" />
+                        コメント
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="この場所についてのコメントを入力..."
+                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editSpotForm.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center font-bold">
+                        <Link2 className="mr-1 h-4 w-4" />
+                        URL
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://example.com"
+                          className="px-3 py-2 border-2 border-foreground bg-background"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full py-3 font-bold tracking-wide bg-primary text-primary-foreground"
+                  disabled={updateSpotMutation.isPending}
+                >
+                  {updateSpotMutation.isPending ? "更新中..." : "更新"}
                 </Button>
               </form>
             </Form>
