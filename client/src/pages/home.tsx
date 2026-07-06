@@ -11,9 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, LogOut, Edit, X, Home as HomeIcon, MapPin, MessageCircle, Link2 } from "lucide-react";
+import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2 } from "lucide-react";
 import { Link } from "wouter";
-import JapanMap from "@/components/JapanMap";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -22,7 +21,6 @@ export default function Home() {
   const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSpot, setShowAddSpot] = useState(false);
-  const [selectedPrefecture, setSelectedPrefecture] = useState<string | null>(null);
 
   // ログイン時は自分のスポットのみ、未ログイン時は全体の公開スポットを取得
   const userId = (user as any)?.id;
@@ -120,16 +118,16 @@ export default function Home() {
   const displayName = (user as any)?.username || (user as any)?.firstName || "ユーザー";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#E9BC4F] text-black">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
+      <header className="sticky top-0 z-50 w-full bg-[#E9BC4F]">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
             <button
-              onClick={() => { setViewingList(null); setSelectedPrefecture(null); }}
+              onClick={() => setViewingList(null)}
               className="cursor-pointer hover:opacity-70 transition-opacity"
             >
-              <HomeIcon className="h-6 w-6" />
+              <span className="text-2xl font-black tracking-widest">レコメン</span>
             </button>
 
             {isAuthenticated ? (
@@ -255,129 +253,61 @@ export default function Home() {
               </div>
             )}
 
-            {/* 日本地図 */}
-            {selectedPrefecture ? (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold">{selectedPrefecture}</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedPrefecture(null)}
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    戻る
-                  </Button>
-                </div>
-                {(() => {
-                  const prefLists = Object.entries(
-                    spots
-                      .filter(spot => spot.region === selectedPrefecture)
-                      .reduce((acc, spot) => {
-                        const key = `${spot.listName}-${spot.region}`;
-                        if (!acc[key]) {
-                          acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
-                        }
-                        acc[key].count++;
-                        return acc;
-                      }, {} as Record<string, { listName: string; region: string; count: number }>)
-                  );
-                  return prefLists.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground text-sm mb-4">この地域にはまだリストがありません</p>
-                      <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
-                        <Link href="/create-list">
-                          <Plus className="mr-2 h-5 w-5" />
-                          リスト作成
-                        </Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {prefLists.map(([key, list]) => (
-                        <button
-                          key={key}
-                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
-                          className="w-full border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors text-left"
-                        >
-                          <h3 className="text-lg font-bold">{list.listName}</h3>
-                          <p className="text-sm text-muted-foreground">{list.count}件</p>
-                        </button>
-                      ))}
-                      <div className="flex justify-center pt-4">
-                        <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
-                          <Link href="/create-list">
-                            <Plus className="mr-2 h-5 w-5" />
-                            リスト作成
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            ) : (
-              <div>
-                {/* リスト一覧（全都道府県） */}
-                {(() => {
-                  const allLists = Object.entries(
-                    spots.reduce((acc, spot) => {
-                      const key = `${spot.listName}-${spot.region}`;
-                      if (!acc[key]) {
-                        acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
-                      }
-                      acc[key].count++;
-                      return acc;
-                    }, {} as Record<string, { listName: string; region: string; count: number }>)
-                  );
-                  return isLoading ? (
-                    <div className="space-y-3">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="animate-pulse border-2 border-muted rounded-lg px-4 py-3">
-                          <div className="h-5 bg-muted w-1/2 mb-2"></div>
-                          <div className="h-3 bg-muted w-1/4"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : allLists.length === 0 ? (
-                    <p className="text-muted-foreground text-sm text-center py-8">まだリストがありません</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {allLists.map(([key, list]) => (
-                        <button
-                          key={key}
-                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
-                          className="w-full border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors text-left"
-                        >
-                          <h3 className="text-lg font-bold">{list.listName}</h3>
-                          <p className="text-sm text-muted-foreground">{list.region} · {list.count}件</p>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* リスト作成ボタン */}
-                {isAuthenticated && (
-                  <div className="flex justify-center mt-8">
-                    <Button asChild size="lg" className="bg-primary text-primary-foreground px-8">
-                      <Link href="/create-list">
-                        <Plus className="mr-2 h-5 w-5" />
-                        リスト作成
-                      </Link>
-                    </Button>
+            {/* リスト一覧（カード） */}
+            <div>
+              {(() => {
+                const allLists = Object.values(
+                  spots.reduce((acc, spot) => {
+                    const key = `${spot.listName}-${spot.region}`;
+                    if (!acc[key]) {
+                      acc[key] = { listName: spot.listName, region: spot.region, places: [] as string[] };
+                    }
+                    acc[key].places.push(spot.placeName || "タイトルなし");
+                    return acc;
+                  }, {} as Record<string, { listName: string; region: string; places: string[] }>)
+                );
+                return isLoading ? (
+                  <div className="flex flex-wrap gap-6">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="animate-pulse bg-white/60 rounded-3xl w-72 h-64"></div>
+                    ))}
                   </div>
-                )}
+                ) : allLists.length === 0 ? (
+                  <p className="text-center py-16 font-bold">まだリストがありません</p>
+                ) : (
+                  <div className="flex flex-wrap gap-6">
+                    {allLists.map((list) => (
+                      <button
+                        key={`${list.listName}-${list.region}`}
+                        onClick={() => setViewingList({ listName: list.listName, region: list.region })}
+                        className="bg-white border-2 border-black rounded-3xl w-full sm:w-72 h-64 px-6 py-5 text-left overflow-hidden hover:opacity-90 transition-opacity"
+                      >
+                        <h3 className="text-lg font-black text-center mb-4">
+                          {list.region}
+                          <span className="mx-1">✕</span>
+                          {list.listName}
+                        </h3>
+                        <ul className="space-y-1">
+                          {list.places.slice(0, 6).map((place, i) => (
+                            <li key={i} className="truncate">・{place}</li>
+                          ))}
+                        </ul>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
 
-                {/* 日本地図（下部） */}
-                <div className="mt-12">
-                  <JapanMap
-                    spots={spots}
-                    onPrefectureClick={(pref) => setSelectedPrefecture(pref)}
-                  />
-                </div>
+              {/* 新規リスト作成 */}
+              <div className="flex justify-center mt-16 pb-10">
+                <Link
+                  href="/create-list"
+                  className="text-lg font-bold hover:opacity-70 transition-opacity"
+                >
+                  ＋ 新規リスト作成
+                </Link>
               </div>
-            )}
+            </div>
           </>
         )}
       </div>
