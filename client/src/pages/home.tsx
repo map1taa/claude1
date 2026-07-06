@@ -156,71 +156,64 @@ export default function Home() {
 
         {viewingList ? (
           <>
-            {/* Viewing specific list */}
-            <div>
-              <div className="mb-6 text-center">
-                <h2 className="text-xl font-bold">
-                  {viewingList.listName}
-                </h2>
-                <p className="text-sm text-muted-foreground">{viewingList.region}</p>
-              </div>
+            {/* Viewing specific list（白カード） */}
+            <div className="bg-white border-2 border-black rounded-3xl max-w-2xl mx-auto px-6 sm:px-10 py-8 min-h-[24rem] flex flex-col">
+              <h2 className="text-xl font-black text-center mb-8">
+                {viewingList.region}でおすすめの{viewingList.listName}
+              </h2>
 
               {/* Places List Section */}
-              <div>
-                <div>
-                  {isLoading ? (
-                    <div className="space-y-3 pt-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="animate-pulse">
-                          <div className="h-4 bg-muted w-3/4 mb-2"></div>
-                          <div className="h-3 bg-muted w-1/2"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : spots.filter(spot =>
-                    spot.listName === viewingList.listName &&
-                    spot.region === viewingList.region
-                  ).length === 0 ? (
-                    <p className="text-muted-foreground text-sm pt-4">このリストには場所が登録されていません</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {spots.filter(spot =>
-                        spot.listName === viewingList.listName &&
-                        spot.region === viewingList.region
-                      ).map((spot) => (
-                        <div key={spot.id} className="border-2 border-foreground rounded-lg px-4 py-3">
-                          <div className="flex-1">
-                            {spot.url ? (
-                              <a
-                                href={spot.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-bold underline hover:opacity-70 transition-opacity"
-                              >
-                                {spot.placeName || 'タイトルなし'}
-                              </a>
-                            ) : (
-                              <h5 className="font-bold">{spot.placeName || 'タイトルなし'}</h5>
-                            )}
-                            <p className="text-sm text-muted-foreground mt-1">{spot.comment}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              <div className="flex-1">
+                {isLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse border border-black/20 px-4 py-4">
+                        <div className="h-4 bg-muted w-3/4"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : spots.filter(spot =>
+                  spot.listName === viewingList.listName &&
+                  spot.region === viewingList.region
+                ).length === 0 ? (
+                  <p className="text-sm text-center py-8">このリストには場所が登録されていません</p>
+                ) : (
+                  <div className="space-y-4">
+                    {spots.filter(spot =>
+                      spot.listName === viewingList.listName &&
+                      spot.region === viewingList.region
+                    ).map((spot) => (
+                      <div key={spot.id} className="border border-black px-4 py-4">
+                        {spot.url ? (
+                          <a
+                            href={spot.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:opacity-70 transition-opacity"
+                          >
+                            {spot.placeName || 'タイトルなし'}
+                          </a>
+                        ) : (
+                          <span>{spot.placeName || 'タイトルなし'}</span>
+                        )}
+                        {spot.comment && (
+                          <span>・・・ {spot.comment}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* 下部ボタン */}
+              {/* 追加ボタン（オレンジの＋） */}
               <div className="flex justify-center mt-10">
-                <Button
+                <button
                   onClick={() => setShowAddSpot(true)}
-                  className="bg-primary text-primary-foreground px-8"
-                  size="lg"
+                  aria-label="場所を追加"
+                  className="bg-[#E8613C] hover:bg-[#d4552f] transition-colors rounded-xl w-12 h-12 flex items-center justify-center"
                 >
-                  <Plus className="mr-2 h-5 w-5" />
-                  場所を追加
-                </Button>
+                  <Plus className="h-7 w-7 text-white" />
+                </button>
               </div>
             </div>
           </>
