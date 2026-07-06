@@ -312,10 +312,44 @@ export default function Home() {
               </div>
             ) : (
               <div>
-                <JapanMap
-                  spots={spots}
-                  onPrefectureClick={(pref) => setSelectedPrefecture(pref)}
-                />
+                {/* リスト一覧（全都道府県） */}
+                {(() => {
+                  const allLists = Object.entries(
+                    spots.reduce((acc, spot) => {
+                      const key = `${spot.listName}-${spot.region}`;
+                      if (!acc[key]) {
+                        acc[key] = { listName: spot.listName, region: spot.region, count: 0 };
+                      }
+                      acc[key].count++;
+                      return acc;
+                    }, {} as Record<string, { listName: string; region: string; count: number }>)
+                  );
+                  return isLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="animate-pulse border-2 border-muted rounded-lg px-4 py-3">
+                          <div className="h-5 bg-muted w-1/2 mb-2"></div>
+                          <div className="h-3 bg-muted w-1/4"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : allLists.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-8">まだリストがありません</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {allLists.map(([key, list]) => (
+                        <button
+                          key={key}
+                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
+                          className="w-full border-2 border-foreground rounded-lg px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+                        >
+                          <h3 className="text-lg font-bold">{list.listName}</h3>
+                          <p className="text-sm text-muted-foreground">{list.region} · {list.count}件</p>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 {/* リスト作成ボタン */}
                 {isAuthenticated && (
@@ -328,6 +362,14 @@ export default function Home() {
                     </Button>
                   </div>
                 )}
+
+                {/* 日本地図（下部） */}
+                <div className="mt-12">
+                  <JapanMap
+                    spots={spots}
+                    onPrefectureClick={(pref) => setSelectedPrefecture(pref)}
+                  />
+                </div>
               </div>
             )}
           </>
