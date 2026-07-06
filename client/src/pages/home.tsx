@@ -298,10 +298,10 @@ export default function Home() {
                 );
               })()}
 
-              {/* 新規リスト作成 */}
+              {/* 新規リスト作成（未ログイン時はログイン画面へ） */}
               <div className="flex justify-center mt-16 pb-10">
                 <Link
-                  href="/create-list"
+                  href={isAuthenticated ? "/create-list" : "/auth"}
                   className="text-lg font-bold hover:opacity-70 transition-opacity"
                 >
                   ＋ 新規リスト作成
