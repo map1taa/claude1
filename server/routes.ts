@@ -155,14 +155,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/spots", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      console.log("Creating spot for user:", userId);
-      console.log("Request body:", req.body);
-      
       const validatedData = insertSpotSchema.parse(req.body);
-      console.log("Validated data:", validatedData);
-      
-      const spot = await storage.createSpot(userId, validatedData);
-      console.log("Created spot:", spot);
+
+      // 共有リスト: ownerId指定があり自分でない場合はメンバー権限を確認し、
+      // オーナーのリストとしてスポットを作成する
+      let targetUserId = userId;
+      const ownerId = req.body.ownerId as string | undefined;
+      if (ownerId && ownerId !== userId) {
+        const me = await storage.getUser(userId);
+        const allowed = me?.email
+          ? await storage.isListMember(ownerId, validatedData.listName ?? "", validatedData.region ?? "", me.email)
+          : false;
+        if (!allowed) {
+          return res.status(403).json({ message: "このリストを編集する権限がありません" });
+        }
+        targetUserId = ownerId;
+      }
+
+      const spot = await storage.createSpot(targetUserId, validatedData);
       res.status(201).json(spot);
     } catch (error) {
       console.error("Error creating spot:", error);
@@ -188,6 +198,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 対象スポットをオーナー本人または共有メンバーとして操作できるか確認
+  async function canEditSpot(userId: string, spot: { userId: string; listName: string; region: string }): Promise<boolean> {
+    if (spot.userId === userId) return true;
+    const me = await storage.getUser(userId);
+    if (!me?.email) return false;
+    return await storage.isListMember(spot.userId, spot.listName, spot.region, me.email);
+  }
+
   app.delete("/api/spots/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -195,8 +213,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid spot ID" });
       }
-      
-      const deleted = await storage.deleteSpot(userId, id);
+
+      const spot = await storage.getSpotById(id);
+      if (!spot) {
+        return res.status(404).json({ message: "Spot not found" });
+      }
+      if (!(await canEditSpot(userId, spot))) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      const deleted = await storage.deleteSpot(spot.userId, id);
       if (deleted) {
         res.status(204).send();
       } else {
@@ -216,8 +242,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid spot ID" });
       }
 
+      const spot = await storage.getSpotById(id);
+      if (!spot) {
+        return res.status(404).json({ message: "Spot not found" });
+      }
+      if (!(await canEditSpot(userId, spot))) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
       const { placeName, url, comment } = req.body;
-      const updated = await storage.updateSpot(userId, id, { placeName, url, comment });
+      const updated = await storage.updateSpot(spot.userId, id, { placeName, url, comment });
       if (updated) {
         res.json({ message: "Spot updated successfully" });
       } else {
@@ -267,6 +301,192 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+
+  // ============ 共有リンク（認証不要で閲覧可） ============
+  app.get("/api/share/:ownerId/spots", async (req: any, res) => {
+    try {
+      const ownerId = req.params.ownerId;
+      const listName = req.query.list as string;
+      const region = req.query.region as string;
+      if (!listName || !region) {
+        return res.status(400).json({ message: "list and region are required" });
+      }
+
+      const owner = await storage.getUser(ownerId);
+      if (!owner) {
+        return res.status(404).json({ message: "List not found" });
+      }
+
+      const listSpots = await storage.getListSpots(ownerId, listName, region);
+
+      // 編集権限: ログイン中のオーナー本人 or 招待済みメンバー
+      let canEdit = false;
+      let isOwner = false;
+      const sessionUserId = (req.session as any)?.userId;
+      if (sessionUserId) {
+        if (sessionUserId === ownerId) {
+          canEdit = true;
+          isOwner = true;
+        } else {
+          const me = await storage.getUser(sessionUserId);
+          if (me?.email) {
+            canEdit = await storage.isListMember(ownerId, listName, region, me.email);
+          }
+        }
+      }
+
+      res.json({
+        owner: { id: owner.id, name: owner.username || owner.email },
+        spots: listSpots,
+        canEdit,
+        isOwner,
+      });
+    } catch (error) {
+      console.error("Error fetching shared list:", error);
+      res.status(500).json({ message: "Failed to fetch list" });
+    }
+  });
+
+  // ============ 友達申請 ============
+  app.post("/api/friends/request", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { targetId } = req.body;
+      if (!targetId || typeof targetId !== "string") {
+        return res.status(400).json({ message: "targetId is required" });
+      }
+      if (targetId === userId) {
+        return res.status(400).json({ message: "自分に友達申請はできません" });
+      }
+      const target = await storage.getUser(targetId);
+      if (!target) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      await storage.sendFriendRequest(userId, targetId);
+      res.json({ message: "友達申請を送りました" });
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      res.status(500).json({ message: "Failed to send friend request" });
+    }
+  });
+
+  app.get("/api/friends/requests", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requests = await storage.getIncomingFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch friend requests" });
+    }
+  });
+
+  app.post("/api/friends/accept", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { requesterId } = req.body;
+      if (!requesterId || typeof requesterId !== "string") {
+        return res.status(400).json({ message: "requesterId is required" });
+      }
+      const accepted = await storage.acceptFriendRequest(userId, requesterId);
+      if (accepted) {
+        res.json({ message: "承認しました" });
+      } else {
+        res.status(404).json({ message: "申請が見つかりません" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to accept friend request" });
+    }
+  });
+
+  app.get("/api/friends", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const friends = await storage.getFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  // 友達の全リスト（承認済みのみ）
+  app.get("/api/friends/:id/spots", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const friendId = req.params.id;
+      if (!(await storage.areFriends(userId, friendId))) {
+        return res.status(403).json({ message: "友達のみ閲覧できます" });
+      }
+      const friendSpots = await storage.getUserSpots(friendId);
+      res.json(friendSpots);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch friend spots" });
+    }
+  });
+
+  // ============ 共有リストのメンバー管理（オーナーのみ） ============
+  app.post("/api/list-members", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { listName, region, email } = req.body;
+      if (!listName || !region || !email || typeof email !== "string") {
+        return res.status(400).json({ message: "listName, region, email are required" });
+      }
+      await storage.addListMember(userId, listName, region, email);
+      const members = await storage.getListMembers(userId, listName, region);
+      res.json(members);
+    } catch (error) {
+      console.error("Error adding list member:", error);
+      res.status(500).json({ message: "Failed to add member" });
+    }
+  });
+
+  app.get("/api/list-members", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const listName = req.query.list as string;
+      const region = req.query.region as string;
+      if (!listName || !region) {
+        return res.status(400).json({ message: "list and region are required" });
+      }
+      const members = await storage.getListMembers(userId, listName, region);
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
+  app.delete("/api/list-members/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid member ID" });
+      }
+      const removed = await storage.removeListMember(userId, id);
+      if (removed) {
+        res.status(204).send();
+      } else {
+        res.status(404).json({ message: "Member not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove member" });
+    }
+  });
+
+  // 自分に共有されているリスト一覧
+  app.get("/api/shared-lists", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const me = await storage.getUser(userId);
+      if (!me?.email) {
+        return res.json([]);
+      }
+      const lists = await storage.getSharedListsForEmail(me.email);
+      res.json(lists);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch shared lists" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

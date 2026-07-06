@@ -42,11 +42,12 @@ export const users = pgTable("users", {
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
-// Follows table for user relationships
+// Follows table for user relationships (友達申請: status = pending | accepted)
 export const follows = pgTable("follows", {
   id: serial("id").primaryKey(),
   followerId: varchar("follower_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   followingId: varchar("following_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: varchar("status").notNull().default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("follows_follower_idx").on(table.followerId),
@@ -55,6 +56,22 @@ export const follows = pgTable("follows", {
 
 export type Follow = typeof follows.$inferSelect;
 export type InsertFollow = typeof follows.$inferInsert;
+
+// 共有リストのメンバー（メールアドレス招待）
+export const listMembers = pgTable("list_members", {
+  id: serial("id").primaryKey(),
+  ownerId: varchar("owner_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listName: text("list_name").notNull(),
+  region: text("region").notNull(),
+  email: varchar("email").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("list_members_owner_idx").on(table.ownerId),
+  index("list_members_email_idx").on(table.email),
+]);
+
+export type ListMember = typeof listMembers.$inferSelect;
+export type InsertListMember = typeof listMembers.$inferInsert;
 
 // Updated spots table with user association
 export const spots = pgTable("spots", {

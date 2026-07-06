@@ -12,14 +12,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2 } from "lucide-react";
+import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   // State management
-  const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
+  const [viewingList, setViewingList] = useState<{ ownerId: string; listName: string; region: string } | null>(null);
+  const [viewingFriend, setViewingFriend] = useState<{ id: string; name: string } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSpot, setShowAddSpot] = useState(false);
   const [showCreateList, setShowCreateList] = useState(false);
@@ -42,19 +43,52 @@ export default function Home() {
     queryKey: spotsQueryKey,
   });
 
-  // Check for new list from create-list page and automatically view it
+  // 共有リンク（/share/:ownerId?list=..&region=..）で開かれた場合はそのリストを表示
   useEffect(() => {
-    const newListData = sessionStorage.getItem('newListToView');
-    if (newListData) {
-      const listData = JSON.parse(newListData);
-      sessionStorage.removeItem('newListToView');
-      setViewingList({ listName: listData.listName, region: listData.region });
-      toast({
-        title: "リストが作成されました",
-        description: `${listData.listName} (${listData.region}) への場所の追加を開始してください。`,
-      });
+    const m = window.location.pathname.match(/^\/share\/([^/]+)/);
+    if (m) {
+      const q = new URLSearchParams(window.location.search);
+      const list = q.get("list");
+      const region = q.get("region");
+      if (list && region) {
+        setViewingList({ ownerId: decodeURIComponent(m[1]), listName: list, region });
+      }
     }
-  }, [toast]);
+  }, []);
+
+  // リスト詳細（共有エンドポイント経由: 自分/友達/共有/未ログインすべて対応）
+  const listQueryKey = viewingList
+    ? [`/api/share/${viewingList.ownerId}/spots?list=${encodeURIComponent(viewingList.listName)}&region=${encodeURIComponent(viewingList.region)}`]
+    : ["list-none"];
+  const { data: listData, isLoading: listLoading } = useQuery<{
+    owner: { id: string; name: string | null };
+    spots: Spot[];
+    canEdit: boolean;
+    isOwner: boolean;
+  }>({ queryKey: listQueryKey, enabled: !!viewingList });
+  const listSpots = listData?.spots ?? [];
+  const canEditList = listData?.canEdit ?? false;
+  const isListOwner = listData?.isOwner ?? false;
+
+  // マイページ用: 友達申請・フレンド・共有リスト
+  const { data: friendRequests = [] } = useQuery<User[]>({
+    queryKey: ["/api/friends/requests"],
+    enabled: isAuthenticated,
+  });
+  const { data: friends = [] } = useQuery<User[]>({
+    queryKey: ["/api/friends"],
+    enabled: isAuthenticated,
+  });
+  const { data: sharedLists = [] } = useQuery<{ ownerId: string; listName: string; region: string; ownerName: string | null }[]>({
+    queryKey: ["/api/shared-lists"],
+    enabled: isAuthenticated,
+  });
+
+  // フレンドのリスト一覧
+  const { data: friendSpots = [] } = useQuery<Spot[]>({
+    queryKey: [`/api/friends/${viewingFriend?.id}/spots`],
+    enabled: !!viewingFriend,
+  });
 
   // Profile edit form
   const form = useForm<UpdateProfile>({
@@ -107,14 +141,14 @@ export default function Home() {
     }
   };
 
-  // Create spot mutation
+  // Create spot mutation（共有リストの場合は ownerId を付与）
   const createSpotMutation = useMutation({
-    mutationFn: async (data: InsertSpot): Promise<Spot> => {
+    mutationFn: async (data: InsertSpot & { ownerId?: string }): Promise<Spot> => {
       const response = await apiRequest("POST", "/api/spots", data);
       return await response.json() as Spot;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      queryClient.invalidateQueries();
       spotForm.reset();
       setShowAddSpot(false);
       toast({ title: "場所が追加されました" });
@@ -134,9 +168,10 @@ export default function Home() {
   });
 
   const onCreateList = (data: { region: string; listName: string }) => {
+    if (!userId) return;
     setShowCreateList(false);
     createListForm.reset();
-    setViewingList({ listName: data.listName, region: data.region });
+    setViewingList({ ownerId: userId, listName: data.listName, region: data.region });
     toast({
       title: "リストが作成されました",
       description: "場所を追加してください",
@@ -164,7 +199,7 @@ export default function Home() {
       await apiRequest("PUT", `/api/spots/${editingSpot.id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      queryClient.invalidateQueries();
       setEditingSpot(null);
       toast({ title: "更新しました" });
     },
@@ -179,7 +214,7 @@ export default function Home() {
       await apiRequest("DELETE", `/api/spots/${editingSpot.id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      queryClient.invalidateQueries();
       setEditingSpot(null);
       toast({ title: "削除しました" });
     },
@@ -191,8 +226,7 @@ export default function Home() {
   // リスト全体編集
   const openEditList = () => {
     if (!viewingList) return;
-    const items = spots
-      .filter(s => s.listName === viewingList.listName && s.region === viewingList.region)
+    const items = listSpots
       .map(s => ({ id: s.id, placeName: s.placeName || "", url: s.url || "", comment: s.comment || "" }));
     setEditListData({ region: viewingList.region, listName: viewingList.listName, items });
   };
@@ -214,8 +248,8 @@ export default function Home() {
           comment: item.comment,
         });
       }
-      // リストのタイトル（場所・ジャンル）変更
-      if (editListData.listName !== viewingList.listName || editListData.region !== viewingList.region) {
+      // リストのタイトル（場所・ジャンル）変更はオーナーのみ
+      if (isListOwner && (editListData.listName !== viewingList.listName || editListData.region !== viewingList.region)) {
         await apiRequest("PATCH", "/api/spots/update-list", {
           oldListName: viewingList.listName,
           newListName: editListData.listName,
@@ -225,9 +259,13 @@ export default function Home() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
-      if (editListData) {
-        setViewingList({ listName: editListData.listName, region: editListData.region });
+      queryClient.invalidateQueries();
+      if (editListData && viewingList) {
+        setViewingList({
+          ownerId: viewingList.ownerId,
+          listName: isListOwner ? editListData.listName : viewingList.listName,
+          region: isListOwner ? editListData.region : viewingList.region,
+        });
       }
       setEditListData(null);
       toast({ title: "リストを更新しました" });
@@ -240,15 +278,13 @@ export default function Home() {
   const deleteListMutation = useMutation({
     mutationFn: async () => {
       if (!viewingList) return;
-      const ids = spots
-        .filter(s => s.listName === viewingList.listName && s.region === viewingList.region)
-        .map(s => s.id);
+      const ids = listSpots.map(s => s.id);
       for (const id of ids) {
         await apiRequest("DELETE", `/api/spots/${id}`);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      queryClient.invalidateQueries();
       setEditListData(null);
       setViewingList(null);
       toast({ title: "リストを削除しました" });
@@ -256,6 +292,71 @@ export default function Home() {
     onError: (error) => {
       toast({ title: "エラー", description: error.message, variant: "destructive" });
     },
+  });
+
+  // 共有リンクのコピー
+  const copyShareLink = () => {
+    if (!viewingList) return;
+    const url = `${window.location.origin}/share/${viewingList.ownerId}?list=${encodeURIComponent(viewingList.listName)}&region=${encodeURIComponent(viewingList.region)}`;
+    navigator.clipboard.writeText(url).then(
+      () => toast({ title: "共有リンクをコピーしました" }),
+      () => toast({ title: "コピーに失敗しました", description: url, variant: "destructive" })
+    );
+  };
+
+  // 友達申請
+  const friendRequestMutation = useMutation({
+    mutationFn: async (targetId: string) => {
+      await apiRequest("POST", "/api/friends/request", { targetId });
+    },
+    onSuccess: () => toast({ title: "友達申請を送りました" }),
+    onError: (error) => toast({ title: "エラー", description: error.message, variant: "destructive" }),
+  });
+
+  const acceptFriendMutation = useMutation({
+    mutationFn: async (requesterId: string) => {
+      await apiRequest("POST", "/api/friends/accept", { requesterId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast({ title: "承認しました" });
+    },
+    onError: (error) => toast({ title: "エラー", description: error.message, variant: "destructive" }),
+  });
+
+  // 共有メンバー管理（オーナーのみ）
+  const [inviteEmail, setInviteEmail] = useState("");
+  const membersQueryKey = viewingList
+    ? [`/api/list-members?list=${encodeURIComponent(viewingList.listName)}&region=${encodeURIComponent(viewingList.region)}`]
+    : ["members-none"];
+  const { data: members = [] } = useQuery<{ id: number; email: string }[]>({
+    queryKey: membersQueryKey,
+    enabled: !!editListData && isListOwner,
+  });
+
+  const addMemberMutation = useMutation({
+    mutationFn: async () => {
+      if (!viewingList) return;
+      await apiRequest("POST", "/api/list-members", {
+        listName: viewingList.listName,
+        region: viewingList.region,
+        email: inviteEmail.trim(),
+      });
+    },
+    onSuccess: () => {
+      setInviteEmail("");
+      queryClient.invalidateQueries();
+      toast({ title: "メンバーを追加しました" });
+    },
+    onError: (error) => toast({ title: "エラー", description: error.message, variant: "destructive" }),
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memberId: number) => {
+      await apiRequest("DELETE", `/api/list-members/${memberId}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries(),
+    onError: (error) => toast({ title: "エラー", description: error.message, variant: "destructive" }),
   });
 
   const displayName = (user as any)?.username || (user as any)?.firstName || "ユーザー";
@@ -267,7 +368,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
             <button
-              onClick={() => setViewingList(null)}
+              onClick={() => { setViewingList(null); setViewingFriend(null); setLocation("/"); }}
               className="cursor-pointer hover:opacity-70 transition-opacity"
             >
               <span className="text-2xl font-black tracking-widest">レコメン</span>
@@ -302,23 +403,44 @@ export default function Home() {
             {/* Viewing specific list（白カード） */}
             <div className="bg-white border-2 border-black rounded-3xl max-w-2xl mx-auto px-6 sm:px-10 py-8 min-h-[24rem] flex flex-col">
               <div className="relative mb-8">
-                <h2 className="text-xl font-black text-center px-8">
+                <h2 className="text-xl font-black text-center px-16">
                   {viewingList.region}でおすすめの{viewingList.listName}
                 </h2>
-                {isAuthenticated && (
-                  <button
-                    onClick={openEditList}
-                    aria-label="リストを編集"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-black/50 hover:text-black transition-colors"
-                  >
-                    <Edit className="h-5 w-5" />
-                  </button>
+                {listData?.owner && !isListOwner && (
+                  <p className="text-xs text-center text-black/60 mt-1">{listData.owner.name}さんのリスト</p>
                 )}
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                  <button
+                    onClick={copyShareLink}
+                    aria-label="共有リンクをコピー"
+                    className="text-black/50 hover:text-black transition-colors"
+                  >
+                    <Share2 className="h-5 w-5" />
+                  </button>
+                  {isAuthenticated && !isListOwner && viewingList.ownerId !== userId && (
+                    <button
+                      onClick={() => friendRequestMutation.mutate(viewingList.ownerId)}
+                      aria-label="友達申請"
+                      className="text-black/50 hover:text-black transition-colors"
+                    >
+                      <UserPlus className="h-5 w-5" />
+                    </button>
+                  )}
+                  {canEditList && (
+                    <button
+                      onClick={openEditList}
+                      aria-label="リストを編集"
+                      className="text-black/50 hover:text-black transition-colors"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Places List Section */}
               <div className="flex-1">
-                {isLoading ? (
+                {listLoading ? (
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="animate-pulse border border-black/20 px-4 py-4">
@@ -326,17 +448,11 @@ export default function Home() {
                       </div>
                     ))}
                   </div>
-                ) : spots.filter(spot =>
-                  spot.listName === viewingList.listName &&
-                  spot.region === viewingList.region
-                ).length === 0 ? (
+                ) : listSpots.length === 0 ? (
                   <p className="text-sm text-center py-8">このリストには場所が登録されていません</p>
                 ) : (
                   <div className="space-y-4">
-                    {spots.filter(spot =>
-                      spot.listName === viewingList.listName &&
-                      spot.region === viewingList.region
-                    ).map((spot) => (
+                    {listSpots.map((spot) => (
                       <div key={spot.id} className="border border-black px-4 py-4 flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           {spot.url ? (
@@ -355,7 +471,7 @@ export default function Home() {
                             <span>・・・ {spot.comment}</span>
                           )}
                         </div>
-                        {isAuthenticated && (
+                        {canEditList && (
                           <button
                             onClick={() => openEditSpot(spot)}
                             aria-label="編集"
@@ -370,18 +486,66 @@ export default function Home() {
                 )}
               </div>
 
-              {/* 追加ボタン（オレンジの＋） */}
-              <div className="flex justify-center mt-10">
-                <button
-                  onClick={() => setShowAddSpot(true)}
-                  aria-label="場所を追加"
-                  className="bg-[#E8613C] hover:bg-[#d4552f] transition-colors rounded-xl w-12 h-12 flex items-center justify-center"
-                >
-                  <Plus className="h-7 w-7 text-white" />
-                </button>
-              </div>
+              {/* 追加ボタン（オレンジの＋、編集権限がある場合のみ） */}
+              {canEditList && (
+                <div className="flex justify-center mt-10">
+                  <button
+                    onClick={() => setShowAddSpot(true)}
+                    aria-label="場所を追加"
+                    className="bg-[#E8613C] hover:bg-[#d4552f] transition-colors rounded-xl w-12 h-12 flex items-center justify-center"
+                  >
+                    <Plus className="h-7 w-7 text-white" />
+                  </button>
+                </div>
+              )}
             </div>
           </>
+        ) : viewingFriend ? (
+          /* フレンドのリスト一覧 */
+          <div>
+            <div className="relative mb-10">
+              <h2 className="text-center font-bold">{viewingFriend.name}さんのリスト</h2>
+              <button
+                onClick={() => setViewingFriend(null)}
+                aria-label="戻る"
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-black/50 hover:text-black transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {(() => {
+              const grouped = friendSpots.reduce((acc, spot) => {
+                if (!acc[spot.region]) acc[spot.region] = [];
+                if (!acc[spot.region].includes(spot.listName)) {
+                  acc[spot.region].push(spot.listName);
+                }
+                return acc;
+              }, {} as Record<string, string[]>);
+              const regions = Object.keys(grouped);
+              return regions.length === 0 ? (
+                <p className="text-center py-16 font-bold">まだリストがありません</p>
+              ) : (
+                <div className="space-y-10">
+                  {regions.map((region) => (
+                    <div key={region}>
+                      <h3 className="text-[#3D3BF3] font-black text-lg mb-4">【{region}】</h3>
+                      <div className="space-y-4">
+                        {grouped[region].map((listName) => (
+                          <button
+                            key={listName}
+                            onClick={() => setViewingList({ ownerId: viewingFriend.id, listName, region })}
+                            className="block bg-white border-2 border-black rounded-2xl px-8 py-4 font-bold text-lg w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
+                          >
+                            {listName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
         ) : (
           <>
             {isAuthenticated ? (
@@ -414,7 +578,7 @@ export default function Home() {
                             {grouped[region].map((listName) => (
                               <button
                                 key={listName}
-                                onClick={() => setViewingList({ listName, region })}
+                                onClick={() => setViewingList({ ownerId: userId, listName, region })}
                                 className="block bg-white border-2 border-black rounded-2xl px-8 py-4 font-bold text-lg w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
                               >
                                 {listName}
@@ -426,6 +590,68 @@ export default function Home() {
                     </div>
                   );
                 })()}
+
+                {/* 共有リスト（招待されたリスト） */}
+                {sharedLists.length > 0 && (
+                  <div className="mt-12">
+                    <h3 className="text-[#3D3BF3] font-black text-lg mb-4">【共有】</h3>
+                    <div className="space-y-4">
+                      {sharedLists.map((sl) => (
+                        <button
+                          key={`${sl.ownerId}-${sl.listName}-${sl.region}`}
+                          onClick={() => setViewingList({ ownerId: sl.ownerId, listName: sl.listName, region: sl.region })}
+                          className="block bg-white border-2 border-black rounded-2xl px-8 py-4 font-bold text-lg w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
+                        >
+                          {sl.region}✕{sl.listName}
+                          <span className="block text-xs font-normal text-black/60">{sl.ownerName}さんと共有</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 友達申請（承認待ち） */}
+                {friendRequests.length > 0 && (
+                  <div className="mt-12">
+                    <h3 className="text-[#3D3BF3] font-black text-lg mb-4">友達申請</h3>
+                    <div className="space-y-3">
+                      {friendRequests.map((r) => (
+                        <div
+                          key={r.id}
+                          className="flex items-center justify-between gap-3 bg-white border-2 border-black rounded-2xl px-5 py-3 w-full sm:w-96"
+                        >
+                          <span className="font-bold truncate">{(r as any).username || (r as any).email}</span>
+                          <Button
+                            size="sm"
+                            onClick={() => acceptFriendMutation.mutate(r.id)}
+                            className="bg-black text-white hover:bg-black/80 rounded-xl shrink-0"
+                            disabled={acceptFriendMutation.isPending}
+                          >
+                            承認
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* フレンド */}
+                {friends.length > 0 && (
+                  <div className="mt-12">
+                    <h3 className="text-[#3D3BF3] font-black text-lg mb-4">フレンド</h3>
+                    <div className="space-y-3">
+                      {friends.map((f) => (
+                        <button
+                          key={f.id}
+                          onClick={() => setViewingFriend({ id: f.id, name: (f as any).username || (f as any).email || "友達" })}
+                          className="block bg-white border-2 border-black rounded-2xl px-8 py-3 font-bold w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
+                        >
+                          {(f as any).username || (f as any).email}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* リスト作成（オレンジの＋） */}
                 <div className="flex justify-center mt-16 pb-10">
@@ -444,13 +670,13 @@ export default function Home() {
                 {(() => {
                   const allLists = Object.values(
                     spots.reduce((acc, spot) => {
-                      const key = `${spot.listName}-${spot.region}`;
+                      const key = `${spot.userId}-${spot.listName}-${spot.region}`;
                       if (!acc[key]) {
-                        acc[key] = { listName: spot.listName, region: spot.region, places: [] as string[] };
+                        acc[key] = { ownerId: spot.userId, listName: spot.listName, region: spot.region, places: [] as string[] };
                       }
                       acc[key].places.push(spot.placeName || "タイトルなし");
                       return acc;
-                    }, {} as Record<string, { listName: string; region: string; places: string[] }>)
+                    }, {} as Record<string, { ownerId: string; listName: string; region: string; places: string[] }>)
                   );
                   return isLoading ? (
                     <div className="flex flex-wrap gap-6">
@@ -464,8 +690,8 @@ export default function Home() {
                     <div className="flex flex-wrap gap-6">
                       {allLists.map((list) => (
                         <button
-                          key={`${list.listName}-${list.region}`}
-                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
+                          key={`${list.ownerId}-${list.listName}-${list.region}`}
+                          onClick={() => setViewingList({ ownerId: list.ownerId, listName: list.listName, region: list.region })}
                           className="flex flex-col bg-white border-2 border-black rounded-3xl w-full sm:w-72 h-64 px-6 py-5 text-left overflow-hidden hover:opacity-90 transition-opacity"
                         >
                           <h3 className="text-lg font-black text-center mb-4">
@@ -516,6 +742,7 @@ export default function Home() {
                   ...data,
                   listName: viewingList.listName,
                   region: viewingList.region,
+                  ownerId: viewingList.ownerId,
                 });
               })} className="space-y-4">
                 <FormField
@@ -674,12 +901,13 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* タイトル（場所 でおすすめの ジャンル） */}
+            {/* タイトル（場所 でおすすめの ジャンル、変更はオーナーのみ） */}
             <div className="flex items-center gap-2 flex-wrap mb-8">
               <Input
                 value={editListData.region}
                 onChange={(e) => setEditListData({ ...editListData, region: e.target.value })}
                 placeholder="場所名"
+                disabled={!isListOwner}
                 className="flex-1 min-w-[6rem] px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
               />
               <span className="font-bold shrink-0">でおすすめの</span>
@@ -687,6 +915,7 @@ export default function Home() {
                 value={editListData.listName}
                 onChange={(e) => setEditListData({ ...editListData, listName: e.target.value })}
                 placeholder="ジャンル"
+                disabled={!isListOwner}
                 className="flex-1 min-w-[6rem] px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
               />
             </div>
@@ -722,20 +951,63 @@ export default function Home() {
               {saveListEditsMutation.isPending ? "保存中..." : "保存"}
             </Button>
 
-            {/* リスト削除 */}
-            <div className="mt-8 pt-6 border-t border-black/20">
-              <Button
-                onClick={() => {
-                  if (window.confirm("このリストを削除しますか？中の場所もすべて削除されます。")) {
-                    deleteListMutation.mutate();
-                  }
-                }}
-                className="w-full py-3 font-bold tracking-wide bg-[#D64541] text-white hover:bg-[#b93b38] rounded-xl"
-                disabled={deleteListMutation.isPending}
-              >
-                {deleteListMutation.isPending ? "削除中..." : "リストを削除"}
-              </Button>
-            </div>
+            {/* 共有メンバー（オーナーのみ） */}
+            {isListOwner && (
+              <div className="mt-8 pt-6 border-t border-black/20">
+                <h4 className="font-bold mb-1">共有メンバー</h4>
+                <p className="text-xs text-black/60 mb-3">
+                  招待したメールアドレスでログインした人が、このリストを一緒に編集できます
+                </p>
+                <div className="space-y-2 mb-3">
+                  {members.map((m) => (
+                    <div key={m.id} className="flex items-center justify-between gap-2 border border-black rounded-xl px-3 py-2">
+                      <span className="text-sm truncate">{m.email}</span>
+                      <button
+                        onClick={() => removeMemberMutation.mutate(m.id)}
+                        aria-label="メンバーを削除"
+                        className="shrink-0 text-black/50 hover:text-black transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="メールアドレスで招待"
+                    className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => inviteEmail.trim() && addMemberMutation.mutate()}
+                    className="bg-black text-white hover:bg-black/80 rounded-xl px-5 shrink-0"
+                    disabled={addMemberMutation.isPending}
+                  >
+                    追加
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* リスト削除（オーナーのみ） */}
+            {isListOwner && (
+              <div className="mt-8 pt-6 border-t border-black/20">
+                <Button
+                  onClick={() => {
+                    if (window.confirm("このリストを削除しますか？中の場所もすべて削除されます。")) {
+                      deleteListMutation.mutate();
+                    }
+                  }}
+                  className="w-full py-3 font-bold tracking-wide bg-[#D64541] text-white hover:bg-[#b93b38] rounded-xl"
+                  disabled={deleteListMutation.isPending}
+                >
+                  {deleteListMutation.isPending ? "削除中..." : "リストを削除"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}

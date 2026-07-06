@@ -2,16 +2,18 @@ import {
   users,
   spots,
   follows,
+  listMembers,
   type User,
   type UpsertUser,
   type Spot,
   type InsertSpot,
   type Follow,
   type InsertFollow,
+  type ListMember,
   type UpdateProfile,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql, ilike } from "drizzle-orm";
+import { eq, desc, and, or, sql, ilike, inArray } from "drizzle-orm";
 import { recommendationService, type RecommendationScore } from "./recommendationService";
 
 export interface IStorage {
@@ -38,6 +40,22 @@ export interface IStorage {
   getFollowers(userId: string): Promise<User[]>;
   getFollowing(userId: string): Promise<User[]>;
   getFollowCounts(userId: string): Promise<{ followers: number; following: number }>;
+
+  // Friend methods（友達申請）
+  sendFriendRequest(requesterId: string, targetId: string): Promise<void>;
+  getIncomingFriendRequests(userId: string): Promise<User[]>;
+  acceptFriendRequest(userId: string, requesterId: string): Promise<boolean>;
+  getFriends(userId: string): Promise<User[]>;
+  areFriends(a: string, b: string): Promise<boolean>;
+
+  // Shared list methods（共有リスト）
+  getSpotById(spotId: number): Promise<Spot | undefined>;
+  getListSpots(ownerId: string, listName: string, region: string): Promise<Spot[]>;
+  addListMember(ownerId: string, listName: string, region: string, email: string): Promise<void>;
+  getListMembers(ownerId: string, listName: string, region: string): Promise<ListMember[]>;
+  removeListMember(ownerId: string, memberId: number): Promise<boolean>;
+  isListMember(ownerId: string, listName: string, region: string, email: string): Promise<boolean>;
+  getSharedListsForEmail(email: string): Promise<{ ownerId: string; listName: string; region: string; ownerName: string | null }[]>;
   
   // Recommendation methods
   getPersonalizedRecommendations(userId: string, limit?: number): Promise<RecommendationScore[]>;
@@ -216,6 +234,155 @@ export class DatabaseStorage implements IStorage {
           eq(spots.region, oldRegion)
         )
       );
+  }
+
+  // Friend methods（友達申請）
+  async sendFriendRequest(requesterId: string, targetId: string): Promise<void> {
+    const existing = await db
+      .select()
+      .from(follows)
+      .where(
+        or(
+          and(eq(follows.followerId, requesterId), eq(follows.followingId, targetId)),
+          and(eq(follows.followerId, targetId), eq(follows.followingId, requesterId))
+        )
+      );
+    if (existing.length > 0) return; // 申請済み or 既に友達
+    await db.insert(follows).values({ followerId: requesterId, followingId: targetId, status: "pending" });
+  }
+
+  async getIncomingFriendRequests(userId: string): Promise<User[]> {
+    const rows = await db
+      .select({ user: users })
+      .from(follows)
+      .innerJoin(users, eq(follows.followerId, users.id))
+      .where(and(eq(follows.followingId, userId), eq(follows.status, "pending")));
+    return rows.map(r => r.user);
+  }
+
+  async acceptFriendRequest(userId: string, requesterId: string): Promise<boolean> {
+    const result = await db
+      .update(follows)
+      .set({ status: "accepted" })
+      .where(
+        and(
+          eq(follows.followerId, requesterId),
+          eq(follows.followingId, userId),
+          eq(follows.status, "pending")
+        )
+      );
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getFriends(userId: string): Promise<User[]> {
+    const rows = await db
+      .select()
+      .from(follows)
+      .where(
+        and(
+          eq(follows.status, "accepted"),
+          or(eq(follows.followerId, userId), eq(follows.followingId, userId))
+        )
+      );
+    const ids = rows.map(r => (r.followerId === userId ? r.followingId : r.followerId));
+    if (ids.length === 0) return [];
+    return await db.select().from(users).where(inArray(users.id, ids));
+  }
+
+  async areFriends(a: string, b: string): Promise<boolean> {
+    const rows = await db
+      .select()
+      .from(follows)
+      .where(
+        and(
+          eq(follows.status, "accepted"),
+          or(
+            and(eq(follows.followerId, a), eq(follows.followingId, b)),
+            and(eq(follows.followerId, b), eq(follows.followingId, a))
+          )
+        )
+      );
+    return rows.length > 0;
+  }
+
+  // Shared list methods（共有リスト）
+  async getSpotById(spotId: number): Promise<Spot | undefined> {
+    const [spot] = await db.select().from(spots).where(eq(spots.id, spotId));
+    return spot;
+  }
+
+  async getListSpots(ownerId: string, listName: string, region: string): Promise<Spot[]> {
+    return await db
+      .select()
+      .from(spots)
+      .where(and(eq(spots.userId, ownerId), eq(spots.listName, listName), eq(spots.region, region)))
+      .orderBy(desc(spots.createdAt));
+  }
+
+  async addListMember(ownerId: string, listName: string, region: string, email: string): Promise<void> {
+    const normalized = email.trim().toLowerCase();
+    const existing = await db
+      .select()
+      .from(listMembers)
+      .where(
+        and(
+          eq(listMembers.ownerId, ownerId),
+          eq(listMembers.listName, listName),
+          eq(listMembers.region, region),
+          eq(listMembers.email, normalized)
+        )
+      );
+    if (existing.length > 0) return;
+    await db.insert(listMembers).values({ ownerId, listName, region, email: normalized });
+  }
+
+  async getListMembers(ownerId: string, listName: string, region: string): Promise<ListMember[]> {
+    return await db
+      .select()
+      .from(listMembers)
+      .where(
+        and(
+          eq(listMembers.ownerId, ownerId),
+          eq(listMembers.listName, listName),
+          eq(listMembers.region, region)
+        )
+      );
+  }
+
+  async removeListMember(ownerId: string, memberId: number): Promise<boolean> {
+    const result = await db
+      .delete(listMembers)
+      .where(and(eq(listMembers.id, memberId), eq(listMembers.ownerId, ownerId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async isListMember(ownerId: string, listName: string, region: string, email: string): Promise<boolean> {
+    const rows = await db
+      .select()
+      .from(listMembers)
+      .where(
+        and(
+          eq(listMembers.ownerId, ownerId),
+          eq(listMembers.listName, listName),
+          eq(listMembers.region, region),
+          eq(listMembers.email, email.trim().toLowerCase())
+        )
+      );
+    return rows.length > 0;
+  }
+
+  async getSharedListsForEmail(email: string): Promise<{ ownerId: string; listName: string; region: string; ownerName: string | null }[]> {
+    const rows = await db
+      .select({ member: listMembers, owner: users })
+      .from(listMembers)
+      .innerJoin(users, eq(listMembers.ownerId, users.id))
+      .where(eq(listMembers.email, email.trim().toLowerCase()));
+    return rows.map(r => ({
+      ownerId: r.member.ownerId,
+      listName: r.member.listName,
+      region: r.member.region,
+      ownerName: r.owner.username || r.owner.email,
+    }));
   }
 
   async searchSpotsByTag(tag: string): Promise<(Spot & { user: User })[]> {

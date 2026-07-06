@@ -23,6 +23,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/share/:ownerId" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route component={NotFound} />
     </Switch>
