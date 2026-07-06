@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/home";
-import CreateList from "@/pages/create-list";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
@@ -25,7 +24,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/auth" component={Auth} />
-      <Route path="/create-list" component={CreateList} />
       <Route component={NotFound} />
     </Switch>
   );

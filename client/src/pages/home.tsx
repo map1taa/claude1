@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { updateProfileSchema, insertSpotSchema, type Spot, type User, type UpdateProfile, type InsertSpot } from "@shared/schema";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2 } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -21,7 +22,9 @@ export default function Home() {
   const [viewingList, setViewingList] = useState<{ listName: string; region: string } | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSpot, setShowAddSpot] = useState(false);
+  const [showCreateList, setShowCreateList] = useState(false);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
+  const [, setLocation] = useLocation();
 
   // ログイン時は自分のスポットのみ、未ログイン時は全体の公開スポットを取得
   const userId = (user as any)?.id;
@@ -115,6 +118,25 @@ export default function Home() {
       toast({ title: "エラー", description: error.message, variant: "destructive" });
     },
   });
+
+  // List creation form (popup)
+  const createListForm = useForm<{ region: string; listName: string }>({
+    resolver: zodResolver(z.object({
+      region: z.string().min(1, "場所名を入力してください"),
+      listName: z.string().min(1, "ジャンルを入力してください"),
+    })),
+    defaultValues: { region: "", listName: "" },
+  });
+
+  const onCreateList = (data: { region: string; listName: string }) => {
+    setShowCreateList(false);
+    createListForm.reset();
+    setViewingList({ listName: data.listName, region: data.region });
+    toast({
+      title: "リストが作成されました",
+      description: "場所を追加してください",
+    });
+  };
 
   // Spot edit form
   const editSpotForm = useForm<{ placeName: string; url: string; comment: string }>({
@@ -333,14 +355,20 @@ export default function Home() {
                 );
               })()}
 
-              {/* 新規リスト作成（未ログイン時はログイン画面へ） */}
+              {/* 新規リスト作成（ポップアップを開く。未ログイン時はログイン画面へ） */}
               <div className="flex justify-center mt-16 pb-10">
-                <Link
-                  href={isAuthenticated ? "/create-list" : "/auth"}
-                  className="text-lg font-bold hover:opacity-70 transition-opacity"
+                <button
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setShowCreateList(true);
+                    } else {
+                      setLocation("/auth");
+                    }
+                  }}
+                  className="bg-[#E8613C] hover:bg-[#d4552f] text-white text-lg font-bold px-10 py-3 rounded-xl transition-colors"
                 >
-                  ＋ 新規リスト作成
-                </Link>
+                  リスト作成
+                </button>
               </div>
             </div>
           </>
@@ -443,6 +471,66 @@ export default function Home() {
                   disabled={createSpotMutation.isPending}
                 >
                   {createSpotMutation.isPending ? "追加中..." : "場所を追加"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+        </div>
+      )}
+
+      {/* Create List Overlay */}
+      {showCreateList && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowCreateList(false)} />
+          <div className="relative bg-white border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-lg mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-black">リスト作成</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowCreateList(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <Form {...createListForm}>
+              <form onSubmit={createListForm.handleSubmit(onCreateList)} className="space-y-6">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FormField
+                    control={createListForm.control}
+                    name="region"
+                    render={({ field }) => (
+                      <FormItem className="flex-1 min-w-[6rem]">
+                        <FormControl>
+                          <Input
+                            placeholder="場所名"
+                            className="px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <span className="font-bold shrink-0">でおすすめの</span>
+                  <FormField
+                    control={createListForm.control}
+                    name="listName"
+                    render={({ field }) => (
+                      <FormItem className="flex-1 min-w-[6rem]">
+                        <FormControl>
+                          <Input
+                            placeholder="ジャンル"
+                            className="px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-black text-white hover:bg-black/80 font-bold tracking-wide rounded-xl"
+                >
+                  リストを作成
                 </Button>
               </form>
             </Form>
