@@ -24,6 +24,11 @@ export default function Home() {
   const [showAddSpot, setShowAddSpot] = useState(false);
   const [showCreateList, setShowCreateList] = useState(false);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
+  const [editListData, setEditListData] = useState<{
+    region: string;
+    listName: string;
+    items: { id: number; placeName: string; url: string; comment: string }[];
+  } | null>(null);
   const [, setLocation] = useLocation();
 
   // ログイン時は自分のスポットのみ、未ログイン時は全体の公開スポットを取得
@@ -183,6 +188,76 @@ export default function Home() {
     },
   });
 
+  // リスト全体編集
+  const openEditList = () => {
+    if (!viewingList) return;
+    const items = spots
+      .filter(s => s.listName === viewingList.listName && s.region === viewingList.region)
+      .map(s => ({ id: s.id, placeName: s.placeName || "", url: s.url || "", comment: s.comment || "" }));
+    setEditListData({ region: viewingList.region, listName: viewingList.listName, items });
+  };
+
+  const updateEditItem = (idx: number, patch: Partial<{ placeName: string; url: string }>) => {
+    setEditListData(prev =>
+      prev ? { ...prev, items: prev.items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) } : prev
+    );
+  };
+
+  const saveListEditsMutation = useMutation({
+    mutationFn: async () => {
+      if (!editListData || !viewingList) return;
+      // 各メモの更新（コメントは保持したまま送る）
+      for (const item of editListData.items) {
+        await apiRequest("PUT", `/api/spots/${item.id}`, {
+          placeName: item.placeName,
+          url: item.url,
+          comment: item.comment,
+        });
+      }
+      // リストのタイトル（場所・ジャンル）変更
+      if (editListData.listName !== viewingList.listName || editListData.region !== viewingList.region) {
+        await apiRequest("PATCH", "/api/spots/update-list", {
+          oldListName: viewingList.listName,
+          newListName: editListData.listName,
+          oldRegion: viewingList.region,
+          newRegion: editListData.region,
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      if (editListData) {
+        setViewingList({ listName: editListData.listName, region: editListData.region });
+      }
+      setEditListData(null);
+      toast({ title: "リストを更新しました" });
+    },
+    onError: (error) => {
+      toast({ title: "エラー", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteListMutation = useMutation({
+    mutationFn: async () => {
+      if (!viewingList) return;
+      const ids = spots
+        .filter(s => s.listName === viewingList.listName && s.region === viewingList.region)
+        .map(s => s.id);
+      for (const id of ids) {
+        await apiRequest("DELETE", `/api/spots/${id}`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: spotsQueryKey });
+      setEditListData(null);
+      setViewingList(null);
+      toast({ title: "リストを削除しました" });
+    },
+    onError: (error) => {
+      toast({ title: "エラー", description: error.message, variant: "destructive" });
+    },
+  });
+
   const displayName = (user as any)?.username || (user as any)?.firstName || "ユーザー";
 
   return (
@@ -226,9 +301,20 @@ export default function Home() {
           <>
             {/* Viewing specific list（白カード） */}
             <div className="bg-white border-2 border-black rounded-3xl max-w-2xl mx-auto px-6 sm:px-10 py-8 min-h-[24rem] flex flex-col">
-              <h2 className="text-xl font-black text-center mb-8">
-                {viewingList.region}でおすすめの{viewingList.listName}
-              </h2>
+              <div className="relative mb-8">
+                <h2 className="text-xl font-black text-center px-8">
+                  {viewingList.region}でおすすめの{viewingList.listName}
+                </h2>
+                {isAuthenticated && (
+                  <button
+                    onClick={openEditList}
+                    aria-label="リストを編集"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-black/50 hover:text-black transition-colors"
+                  >
+                    <Edit className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
 
               {/* Places List Section */}
               <div className="flex-1">
@@ -572,6 +658,84 @@ export default function Home() {
                 </Button>
               </form>
             </Form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit List Overlay（リスト全体の一括編集） */}
+      {editListData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setEditListData(null)} />
+          <div className="relative bg-white border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-black">リストを編集</h3>
+              <Button variant="ghost" size="sm" onClick={() => setEditListData(null)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* タイトル（場所 でおすすめの ジャンル） */}
+            <div className="flex items-center gap-2 flex-wrap mb-8">
+              <Input
+                value={editListData.region}
+                onChange={(e) => setEditListData({ ...editListData, region: e.target.value })}
+                placeholder="場所名"
+                className="flex-1 min-w-[6rem] px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
+              />
+              <span className="font-bold shrink-0">でおすすめの</span>
+              <Input
+                value={editListData.listName}
+                onChange={(e) => setEditListData({ ...editListData, listName: e.target.value })}
+                placeholder="ジャンル"
+                className="flex-1 min-w-[6rem] px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
+              />
+            </div>
+
+            {/* 各メモ（名前・マップリンク） */}
+            <div className="space-y-4 mb-8">
+              {editListData.items.map((item, idx) => (
+                <div key={item.id} className="border border-black rounded-xl p-4 space-y-2">
+                  <Input
+                    value={item.placeName}
+                    onChange={(e) => updateEditItem(idx, { placeName: e.target.value })}
+                    placeholder="名前"
+                    className="px-3 py-2 border-2 border-black bg-white rounded-xl"
+                  />
+                  <Input
+                    value={item.url}
+                    onChange={(e) => updateEditItem(idx, { url: e.target.value })}
+                    placeholder="マップリンク（URL）"
+                    className="px-3 py-2 border-2 border-black bg-white rounded-xl"
+                  />
+                </div>
+              ))}
+              {editListData.items.length === 0 && (
+                <p className="text-sm text-center py-4">このリストにはまだ場所がありません</p>
+              )}
+            </div>
+
+            <Button
+              onClick={() => saveListEditsMutation.mutate()}
+              className="w-full py-3 font-bold tracking-wide bg-black text-white hover:bg-black/80 rounded-xl"
+              disabled={saveListEditsMutation.isPending}
+            >
+              {saveListEditsMutation.isPending ? "保存中..." : "保存"}
+            </Button>
+
+            {/* リスト削除 */}
+            <div className="mt-8 pt-6 border-t border-black/20">
+              <Button
+                onClick={() => {
+                  if (window.confirm("このリストを削除しますか？中の場所もすべて削除されます。")) {
+                    deleteListMutation.mutate();
+                  }
+                }}
+                className="w-full py-3 font-bold tracking-wide bg-[#D64541] text-white hover:bg-[#b93b38] rounded-xl"
+                disabled={deleteListMutation.isPending}
+              >
+                {deleteListMutation.isPending ? "削除中..." : "リストを削除"}
+              </Button>
+            </div>
           </div>
         </div>
       )}

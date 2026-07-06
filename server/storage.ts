@@ -28,7 +28,7 @@ export interface IStorage {
   getFollowingSpots(userId: string): Promise<(Spot & { user: User })[]>;
   createSpot(userId: string, spot: InsertSpot): Promise<Spot>;
   deleteSpot(userId: string, spotId: number): Promise<boolean>;
-  updateListName(userId: string, oldListName: string, newListName: string, region: string): Promise<void>;
+  updateListName(userId: string, oldListName: string, newListName: string, oldRegion: string, newRegion: string): Promise<void>;
   searchSpotsByTag(tag: string): Promise<(Spot & { user: User })[]>;
   
   // Follow methods
@@ -205,15 +205,15 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async updateListName(userId: string, oldListName: string, newListName: string, region: string): Promise<void> {
+  async updateListName(userId: string, oldListName: string, newListName: string, oldRegion: string, newRegion: string): Promise<void> {
     await db
       .update(spots)
-      .set({ listName: newListName })
+      .set({ listName: newListName, region: newRegion })
       .where(
         and(
           eq(spots.userId, userId),
           eq(spots.listName, oldListName),
-          eq(spots.region, region)
+          eq(spots.region, oldRegion)
         )
       );
   }
