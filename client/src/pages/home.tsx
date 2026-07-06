@@ -15,6 +15,21 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 
+// リスト作成で選べるジャンルタグ
+const GENRE_TAGS = [
+  "喫茶店",
+  "居酒屋",
+  "ローカルスポット",
+  "おしゃれ系",
+  "ワイン",
+  "ビール",
+  "日本酒",
+  "ラーメン",
+  "昼飲み",
+  "隠れ家",
+  "センス",
+];
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -842,12 +857,12 @@ export default function Home() {
             </div>
             <Form {...createListForm}>
               <form onSubmit={createListForm.handleSubmit(onCreateList)} className="space-y-6">
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
                   <FormField
                     control={createListForm.control}
                     name="region"
                     render={({ field }) => (
-                      <FormItem className="flex-1 min-w-[6rem]">
+                      <FormItem className="flex-1">
                         <FormControl>
                           <Input
                             placeholder="場所名"
@@ -860,23 +875,47 @@ export default function Home() {
                     )}
                   />
                   <span className="font-bold shrink-0">でおすすめの</span>
-                  <FormField
-                    control={createListForm.control}
-                    name="listName"
-                    render={({ field }) => (
-                      <FormItem className="flex-1 min-w-[6rem]">
-                        <FormControl>
-                          <Input
-                            placeholder="ジャンル"
-                            className="px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+
+                {/* ジャンルタグ */}
+                <div className="flex flex-wrap gap-2">
+                  {GENRE_TAGS.map((tag) => {
+                    const selected = createListForm.watch("listName") === tag;
+                    return (
+                      <button
+                        type="button"
+                        key={tag}
+                        onClick={() =>
+                          createListForm.setValue("listName", selected ? "" : tag, { shouldValidate: true })
+                        }
+                        className={`px-4 py-2 rounded-full border-2 border-black font-bold text-sm transition-colors ${
+                          selected ? "bg-black text-white" : "bg-white text-black hover:bg-black/5"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 自由入力 */}
+                <FormField
+                  control={createListForm.control}
+                  name="listName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="その他（自由入力）"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <Button
                   type="submit"
                   className="w-full bg-black text-white hover:bg-black/80 font-bold tracking-wide rounded-xl"
