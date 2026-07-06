@@ -280,7 +280,7 @@ export default function Home() {
                       <button
                         key={`${list.listName}-${list.region}`}
                         onClick={() => setViewingList({ listName: list.listName, region: list.region })}
-                        className="bg-white border-2 border-black rounded-3xl w-full sm:w-72 h-64 px-6 py-5 text-left overflow-hidden hover:opacity-90 transition-opacity"
+                        className="flex flex-col bg-white border-2 border-black rounded-3xl w-full sm:w-72 h-64 px-6 py-5 text-left overflow-hidden hover:opacity-90 transition-opacity"
                       >
                         <h3 className="text-lg font-black text-center mb-4">
                           {list.region}
