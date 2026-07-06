@@ -564,9 +564,9 @@ export default function Home() {
         ) : (
           <>
             {isAuthenticated ? (
-              /* マイページ: 場所ごとにリストをグルーピング表示 */
+              /* マイページ: 場所ごとに1行（水色ブロック＋矢印＋リスト一覧） */
               <div>
-                <h2 className="text-center font-bold mb-10">マイリスト</h2>
+                <h2 className="text-[#8FC1F1] font-bold tracking-widest mb-6">マイリスト</h2>
                 {(() => {
                   const grouped = spots.reduce((acc, spot) => {
                     if (!acc[spot.region]) acc[spot.region] = [];
@@ -577,26 +577,45 @@ export default function Home() {
                   }, {} as Record<string, string[]>);
                   const regions = Object.keys(grouped);
                   return isLoading ? (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {[...Array(2)].map((_, i) => (
-                        <div key={i} className="animate-pulse bg-white/60 rounded-2xl w-full sm:w-72 h-16"></div>
+                        <div key={i} className="animate-pulse bg-white/60 rounded-[2rem] w-full h-28"></div>
                       ))}
                     </div>
                   ) : regions.length === 0 ? (
                     <p className="text-center py-16 font-bold">まだリストがありません</p>
                   ) : (
-                    <div className="space-y-10">
+                    <div className="space-y-6">
                       {regions.map((region) => (
-                        <div key={region}>
-                          <h3 className="text-[#3D3BF3] font-black text-lg mb-4">【{region}】</h3>
-                          <div className="space-y-4">
+                        <div
+                          key={region}
+                          className="flex items-stretch bg-white border-2 border-black rounded-[2rem] overflow-hidden min-h-[7rem]"
+                        >
+                          {/* 場所（水色ブロック） */}
+                          <div className="bg-[#8FC1F1] w-32 sm:w-44 shrink-0 flex items-center justify-center px-3">
+                            <span className="text-xl sm:text-2xl font-black text-center break-words">{region}</span>
+                          </div>
+                          {/* オレンジ矢印 */}
+                          <div className="flex items-center shrink-0 -ml-4 z-10">
+                            <svg width="44" height="36" viewBox="0 0 44 36" aria-hidden="true">
+                              <path
+                                d="M2 13 L24 13 L24 4 L42 18 L24 32 L24 23 L2 23 Z"
+                                fill="#E8613C"
+                                stroke="black"
+                                strokeWidth="2"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          {/* リスト一覧 */}
+                          <div className="flex-1 py-4 px-4 sm:px-6 flex flex-col justify-center gap-1">
                             {grouped[region].map((listName) => (
                               <button
                                 key={listName}
                                 onClick={() => setViewingList({ ownerId: userId, listName, region })}
-                                className="block bg-white border-2 border-black rounded-2xl px-8 py-4 font-bold text-lg w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
+                                className="text-left font-bold hover:underline"
                               >
-                                {listName}
+                                ・{listName}
                               </button>
                             ))}
                           </div>
