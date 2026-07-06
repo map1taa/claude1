@@ -283,94 +283,117 @@ export default function Home() {
           </>
         ) : (
           <>
-            {/* Profile Section (shown only when logged in) */}
-            {isAuthenticated && (
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-14 w-14">
-                    <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
-                    <AvatarFallback className="text-lg font-bold bg-foreground text-background">
-                      {displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-xl font-bold">{displayName}</h2>
-                    {(user as any)?.bio && (
-                      <p className="text-sm text-muted-foreground">{(user as any).bio}</p>
-                    )}
-                  </div>
+            {isAuthenticated ? (
+              /* マイページ: 場所ごとにリストをグルーピング表示 */
+              <div>
+                <h2 className="text-center font-bold mb-10">マイリスト</h2>
+                {(() => {
+                  const grouped = spots.reduce((acc, spot) => {
+                    if (!acc[spot.region]) acc[spot.region] = [];
+                    if (!acc[spot.region].includes(spot.listName)) {
+                      acc[spot.region].push(spot.listName);
+                    }
+                    return acc;
+                  }, {} as Record<string, string[]>);
+                  const regions = Object.keys(grouped);
+                  return isLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(2)].map((_, i) => (
+                        <div key={i} className="animate-pulse bg-white/60 rounded-2xl w-full sm:w-72 h-16"></div>
+                      ))}
+                    </div>
+                  ) : regions.length === 0 ? (
+                    <p className="text-center py-16 font-bold">まだリストがありません</p>
+                  ) : (
+                    <div className="space-y-10">
+                      {regions.map((region) => (
+                        <div key={region}>
+                          <h3 className="text-[#3D3BF3] font-black text-lg mb-4">【{region}】</h3>
+                          <div className="space-y-4">
+                            {grouped[region].map((listName) => (
+                              <button
+                                key={listName}
+                                onClick={() => setViewingList({ listName, region })}
+                                className="block bg-white border-2 border-black rounded-2xl px-8 py-4 font-bold text-lg w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
+                              >
+                                {listName}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* リスト作成（オレンジの＋） */}
+                <div className="flex justify-center mt-16 pb-10">
+                  <button
+                    onClick={() => setShowCreateList(true)}
+                    aria-label="リスト作成"
+                    className="bg-[#E8613C] hover:bg-[#d4552f] transition-colors rounded-xl w-12 h-12 flex items-center justify-center"
+                  >
+                    <Plus className="h-7 w-7 text-white" />
+                  </button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowProfileEdit(true)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
+              </div>
+            ) : (
+              /* 未ログイン: 公開リストのカードグリッド */
+              <div>
+                {(() => {
+                  const allLists = Object.values(
+                    spots.reduce((acc, spot) => {
+                      const key = `${spot.listName}-${spot.region}`;
+                      if (!acc[key]) {
+                        acc[key] = { listName: spot.listName, region: spot.region, places: [] as string[] };
+                      }
+                      acc[key].places.push(spot.placeName || "タイトルなし");
+                      return acc;
+                    }, {} as Record<string, { listName: string; region: string; places: string[] }>)
+                  );
+                  return isLoading ? (
+                    <div className="flex flex-wrap gap-6">
+                      {[...Array(2)].map((_, i) => (
+                        <div key={i} className="animate-pulse bg-white/60 rounded-3xl w-72 h-64"></div>
+                      ))}
+                    </div>
+                  ) : allLists.length === 0 ? (
+                    <p className="text-center py-16 font-bold">まだリストがありません</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-6">
+                      {allLists.map((list) => (
+                        <button
+                          key={`${list.listName}-${list.region}`}
+                          onClick={() => setViewingList({ listName: list.listName, region: list.region })}
+                          className="flex flex-col bg-white border-2 border-black rounded-3xl w-full sm:w-72 h-64 px-6 py-5 text-left overflow-hidden hover:opacity-90 transition-opacity"
+                        >
+                          <h3 className="text-lg font-black text-center mb-4">
+                            {list.region}
+                            <span className="mx-1">✕</span>
+                            {list.listName}
+                          </h3>
+                          <ul className="space-y-1">
+                            {list.places.slice(0, 6).map((place, i) => (
+                              <li key={i} className="truncate">・{place}</li>
+                            ))}
+                          </ul>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* リスト作成（ログイン画面へ） */}
+                <div className="flex justify-center mt-16 pb-10">
+                  <button
+                    onClick={() => setLocation("/auth")}
+                    className="bg-[#E8613C] hover:bg-[#d4552f] text-white text-lg font-bold px-10 py-3 rounded-xl transition-colors"
+                  >
+                    リスト作成
+                  </button>
+                </div>
               </div>
             )}
-
-            {/* リスト一覧（カード） */}
-            <div>
-              {(() => {
-                const allLists = Object.values(
-                  spots.reduce((acc, spot) => {
-                    const key = `${spot.listName}-${spot.region}`;
-                    if (!acc[key]) {
-                      acc[key] = { listName: spot.listName, region: spot.region, places: [] as string[] };
-                    }
-                    acc[key].places.push(spot.placeName || "タイトルなし");
-                    return acc;
-                  }, {} as Record<string, { listName: string; region: string; places: string[] }>)
-                );
-                return isLoading ? (
-                  <div className="flex flex-wrap gap-6">
-                    {[...Array(2)].map((_, i) => (
-                      <div key={i} className="animate-pulse bg-white/60 rounded-3xl w-72 h-64"></div>
-                    ))}
-                  </div>
-                ) : allLists.length === 0 ? (
-                  <p className="text-center py-16 font-bold">まだリストがありません</p>
-                ) : (
-                  <div className="flex flex-wrap gap-6">
-                    {allLists.map((list) => (
-                      <button
-                        key={`${list.listName}-${list.region}`}
-                        onClick={() => setViewingList({ listName: list.listName, region: list.region })}
-                        className="flex flex-col bg-white border-2 border-black rounded-3xl w-full sm:w-72 h-64 px-6 py-5 text-left overflow-hidden hover:opacity-90 transition-opacity"
-                      >
-                        <h3 className="text-lg font-black text-center mb-4">
-                          {list.region}
-                          <span className="mx-1">✕</span>
-                          {list.listName}
-                        </h3>
-                        <ul className="space-y-1">
-                          {list.places.slice(0, 6).map((place, i) => (
-                            <li key={i} className="truncate">・{place}</li>
-                          ))}
-                        </ul>
-                      </button>
-                    ))}
-                  </div>
-                );
-              })()}
-
-              {/* 新規リスト作成（ポップアップを開く。未ログイン時はログイン画面へ） */}
-              <div className="flex justify-center mt-16 pb-10">
-                <button
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      setShowCreateList(true);
-                    } else {
-                      setLocation("/auth");
-                    }
-                  }}
-                  className="bg-[#E8613C] hover:bg-[#d4552f] text-white text-lg font-bold px-10 py-3 rounded-xl transition-colors"
-                >
-                  リスト作成
-                </button>
-              </div>
-            </div>
           </>
         )}
       </div>
