@@ -1,6 +1,8 @@
 import session from "express-session";
+import connectPg from "connect-pg-simple";
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
+import { pool } from "./db";
 import crypto from "crypto";
 
 export async function setupAuth(app: Express) {
@@ -9,8 +11,17 @@ export async function setupAuth(app: Express) {
     app.set("trust proxy", 1);
   }
 
+  // Persist sessions in Postgres so logins survive server restarts/redeploys
+  const PgStore = connectPg(session);
+  const sessionStore = new PgStore({
+    pool,
+    tableName: "sessions",
+    createTableIfMissing: false,
+  });
+
   app.use(
     session({
+      store: sessionStore,
       secret: process.env.SESSION_SECRET || "local-dev-secret",
       resave: false,
       saveUninitialized: false,
