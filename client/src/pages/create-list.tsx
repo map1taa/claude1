@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Home as HomeIcon } from "lucide-react";
 
 const listFormSchema = z.object({
   listName: z.string().min(1, "ジャンルを入力してください"),
@@ -38,16 +37,16 @@ export default function CreateList() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#E9BC4F] text-black flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
+      <header className="sticky top-0 z-50 w-full bg-[#E9BC4F]">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
             <button
               onClick={() => setLocation('/')}
               className="cursor-pointer hover:opacity-70 transition-opacity"
             >
-              <HomeIcon className="h-6 w-6" />
+              <span className="text-2xl font-black tracking-widest">レコメン</span>
             </button>
           </div>
         </div>
@@ -67,7 +66,7 @@ export default function CreateList() {
                       <FormControl>
                         <Input
                           placeholder="場所名"
-                          className="px-3 py-2 border-2 border-foreground bg-background text-lg"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
                           {...field}
                         />
                       </FormControl>
@@ -84,7 +83,7 @@ export default function CreateList() {
                       <FormControl>
                         <Input
                           placeholder="ジャンル"
-                          className="px-3 py-2 border-2 border-foreground bg-background text-lg"
+                          className="px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
                           {...field}
                         />
                       </FormControl>
@@ -96,7 +95,7 @@ export default function CreateList() {
 
               <Button
                 type="submit"
-                className="w-full bg-primary text-primary-foreground font-bold tracking-wide"
+                className="w-full bg-black text-white hover:bg-black/80 font-bold tracking-wide rounded-xl"
                 size="lg"
               >
                 リストを作成

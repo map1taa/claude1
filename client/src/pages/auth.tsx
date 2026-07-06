@@ -33,11 +33,11 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background">
+    <div className="min-h-screen bg-[#E9BC4F] text-black flex flex-col">
+      <header className="sticky top-0 z-50 w-full bg-[#E9BC4F]">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center">
-            <h1 className="text-xl font-bold tracking-wider">あしあと</h1>
+            <h1 className="text-2xl font-black tracking-widest">レコメン</h1>
           </div>
         </div>
       </header>
@@ -54,12 +54,12 @@ export default function Auth() {
               placeholder="メールアドレス"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="px-3 py-2 border-2 border-foreground bg-background text-lg"
+              className="px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
               required
             />
             <Button
               type="submit"
-              className="w-full bg-primary text-primary-foreground font-bold tracking-wide"
+              className="w-full bg-black text-white hover:bg-black/80 font-bold tracking-wide rounded-xl"
               size="lg"
               disabled={isPending}
             >
@@ -75,7 +75,7 @@ export default function Auth() {
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground underline hover:opacity-70 transition-opacity"
+              className="text-sm underline hover:opacity-70 transition-opacity"
             >
               {isLogin
                 ? "アカウントをお持ちでない方はこちら"
