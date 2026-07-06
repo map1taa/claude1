@@ -6,12 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/home";
 import CreateList from "@/pages/create-list";
-import Landing from "@/pages/landing";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -21,19 +20,12 @@ function Router() {
     );
   }
 
+  // Home is public: viewable without logging in. Login is only needed to post.
   return (
     <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/auth" component={Auth} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/create-list" component={CreateList} />
-        </>
-      )}
+      <Route path="/" component={Home} />
+      <Route path="/auth" component={Auth} />
+      <Route path="/create-list" component={CreateList} />
       <Route component={NotFound} />
     </Switch>
   );

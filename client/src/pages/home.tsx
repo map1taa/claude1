@@ -126,7 +126,7 @@ export default function Home() {
               <HomeIcon className="h-6 w-6" />
             </button>
 
-            {isAuthenticated && (
+            {isAuthenticated ? (
               <Button
                 variant="ghost"
                 size="sm"
@@ -137,6 +137,10 @@ export default function Home() {
                 }}
               >
                 <LogOut className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button asChild variant="ghost" size="sm" className="font-bold">
+                <a href="/auth">ログイン</a>
               </Button>
             )}
           </div>
@@ -218,30 +222,32 @@ export default function Home() {
           </>
         ) : (
           <>
-            {/* Profile Section */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-14 w-14">
-                  <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
-                  <AvatarFallback className="text-lg font-bold bg-foreground text-background">
-                    {displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h2 className="text-xl font-bold">{displayName}</h2>
-                  {(user as any)?.bio && (
-                    <p className="text-sm text-muted-foreground">{(user as any).bio}</p>
-                  )}
+            {/* Profile Section (shown only when logged in) */}
+            {isAuthenticated && (
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-14 w-14">
+                    <AvatarImage src={(user as any)?.profileImageUrl || undefined} />
+                    <AvatarFallback className="text-lg font-bold bg-foreground text-background">
+                      {displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-xl font-bold">{displayName}</h2>
+                    {(user as any)?.bio && (
+                      <p className="text-sm text-muted-foreground">{(user as any).bio}</p>
+                    )}
+                  </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowProfileEdit(true)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowProfileEdit(true)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            </div>
+            )}
 
             {/* 日本地図 */}
             {selectedPrefecture ? (
