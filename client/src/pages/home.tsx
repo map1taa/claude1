@@ -774,6 +774,10 @@ export default function Home() {
                           <Input
                             placeholder="https://example.com"
                             className="px-3 py-2 border-2 border-black bg-white rounded-xl"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            spellCheck={false}
                             {...field}
                             onChange={(e) => {
                               field.onChange(e);
@@ -1117,6 +1121,10 @@ export default function Home() {
                         <Input
                           placeholder="https://example.com"
                           className="px-3 py-2 border-2 border-black bg-white rounded-xl"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="off"
+                          spellCheck={false}
                           {...field}
                         />
                       </FormControl>
