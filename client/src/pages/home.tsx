@@ -451,8 +451,8 @@ export default function Home() {
 
         {viewingList ? (
           <>
-            {/* Viewing specific list（白カード） */}
-            <div className="bg-white border-2 border-black rounded-3xl max-w-2xl mx-auto px-6 sm:px-10 py-8 min-h-[24rem] flex flex-col">
+            {/* Viewing specific list（白カード＋水色枠） */}
+            <div className="bg-white border-[6px] border-[#7EB5E8] rounded-3xl max-w-2xl mx-auto px-6 sm:px-10 py-8 min-h-[24rem] flex flex-col">
               <div className="relative mb-8">
                 <h2 className="text-xl font-black text-center px-16">
                   {viewingList.region}でおすすめの{viewingList.listName}
@@ -511,25 +511,25 @@ export default function Home() {
                 ) : listSpots.length === 0 ? (
                   <p className="text-sm text-center py-8">このリストには場所が登録されていません</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {listSpots.map((spot) => (
-                      <div key={spot.id} className="border border-black px-4 py-4 flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          {spot.url ? (
-                            <a
-                              href={spot.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline hover:opacity-70 transition-opacity"
-                            >
-                              {spot.placeName || 'タイトルなし'}
-                            </a>
-                          ) : (
-                            <span>{spot.placeName || 'タイトルなし'}</span>
-                          )}
-                          {spot.comment && (
-                            <span>・・・ {spot.comment}</span>
-                          )}
+                      <div key={spot.id} className="flex items-start justify-between gap-3 pb-4 border-b-2 border-dashed border-black/40">
+                        <div className="min-w-0 space-y-1">
+                          <p className="font-bold">店名：{spot.placeName || 'タイトルなし'}</p>
+                          <p className="break-all">
+                            URL：
+                            {spot.url && (
+                              <a
+                                href={spot.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:opacity-70 transition-opacity"
+                              >
+                                {spot.url}
+                              </a>
+                            )}
+                          </p>
+                          <p className="break-words">コメント：{spot.comment}</p>
                         </div>
                         {canEditList && (
                           <button
@@ -546,15 +546,15 @@ export default function Home() {
                 )}
               </div>
 
-              {/* 追加ボタン（オレンジの＋、編集権限がある場合のみ） */}
+              {/* 追加ボタン（黄色いピル、編集権限がある場合のみ） */}
               {canEditList && (
                 <div className="flex justify-center mt-10">
                   <button
                     onClick={() => setShowAddSpot(true)}
-                    aria-label="場所を追加"
-                    className="bg-[#E8613C] hover:bg-[#d4552f] transition-colors rounded-xl w-12 h-12 flex items-center justify-center"
+                    className="bg-[#E9C46A] hover:bg-[#e0b552] transition-colors rounded-full px-10 py-3 font-bold flex items-center gap-1"
                   >
-                    <Plus className="h-7 w-7 text-white" />
+                    <Plus className="h-5 w-5" />
+                    場所を追加
                   </button>
                 </div>
               )}
