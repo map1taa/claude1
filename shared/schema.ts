@@ -73,6 +73,21 @@ export const listMembers = pgTable("list_members", {
 export type ListMember = typeof listMembers.$inferSelect;
 export type InsertListMember = typeof listMembers.$inferInsert;
 
+// 保存済みリスト（他人のリストのブックマーク）
+export const savedLists = pgTable("saved_lists", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  ownerId: varchar("owner_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listName: text("list_name").notNull(),
+  region: text("region").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("saved_lists_user_idx").on(table.userId),
+]);
+
+export type SavedList = typeof savedLists.$inferSelect;
+export type InsertSavedList = typeof savedLists.$inferInsert;
+
 // Updated spots table with user association
 export const spots = pgTable("spots", {
   id: serial("id").primaryKey(),

@@ -3,6 +3,7 @@ import {
   spots,
   follows,
   listMembers,
+  savedLists,
   type User,
   type UpsertUser,
   type Spot,
@@ -56,7 +57,12 @@ export interface IStorage {
   removeListMember(ownerId: string, memberId: number): Promise<boolean>;
   isListMember(ownerId: string, listName: string, region: string, email: string): Promise<boolean>;
   getSharedListsForEmail(email: string): Promise<{ ownerId: string; listName: string; region: string; ownerName: string | null }[]>;
-  
+
+  // Saved list methods（保存済みリスト）
+  saveList(userId: string, ownerId: string, listName: string, region: string): Promise<void>;
+  unsaveList(userId: string, ownerId: string, listName: string, region: string): Promise<boolean>;
+  getSavedLists(userId: string): Promise<{ id: number; ownerId: string; listName: string; region: string; ownerName: string | null }[]>;
+
   // Recommendation methods
   getPersonalizedRecommendations(userId: string, limit?: number): Promise<RecommendationScore[]>;
   recordInteraction(userId: string, spotId: number, interactionType: string): Promise<void>;
@@ -381,6 +387,53 @@ export class DatabaseStorage implements IStorage {
       ownerId: r.member.ownerId,
       listName: r.member.listName,
       region: r.member.region,
+      ownerName: r.owner.username || r.owner.email,
+    }));
+  }
+
+  // Saved list methods（保存済みリスト）
+  async saveList(userId: string, ownerId: string, listName: string, region: string): Promise<void> {
+    const existing = await db
+      .select()
+      .from(savedLists)
+      .where(
+        and(
+          eq(savedLists.userId, userId),
+          eq(savedLists.ownerId, ownerId),
+          eq(savedLists.listName, listName),
+          eq(savedLists.region, region)
+        )
+      );
+    if (existing.length > 0) return;
+    await db.insert(savedLists).values({ userId, ownerId, listName, region });
+  }
+
+  async unsaveList(userId: string, ownerId: string, listName: string, region: string): Promise<boolean> {
+    const result = await db
+      .delete(savedLists)
+      .where(
+        and(
+          eq(savedLists.userId, userId),
+          eq(savedLists.ownerId, ownerId),
+          eq(savedLists.listName, listName),
+          eq(savedLists.region, region)
+        )
+      );
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getSavedLists(userId: string): Promise<{ id: number; ownerId: string; listName: string; region: string; ownerName: string | null }[]> {
+    const rows = await db
+      .select({ saved: savedLists, owner: users })
+      .from(savedLists)
+      .innerJoin(users, eq(savedLists.ownerId, users.id))
+      .where(eq(savedLists.userId, userId))
+      .orderBy(desc(savedLists.createdAt));
+    return rows.map(r => ({
+      id: r.saved.id,
+      ownerId: r.saved.ownerId,
+      listName: r.saved.listName,
+      region: r.saved.region,
       ownerName: r.owner.username || r.owner.email,
     }));
   }

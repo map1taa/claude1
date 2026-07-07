@@ -473,6 +473,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ 保存済みリスト（ブックマーク） ============
+  app.get("/api/saved-lists", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const lists = await storage.getSavedLists(userId);
+      res.json(lists);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch saved lists" });
+    }
+  });
+
+  app.post("/api/saved-lists", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { ownerId, listName, region } = req.body;
+      if (!ownerId || !listName || !region) {
+        return res.status(400).json({ message: "ownerId, listName, region are required" });
+      }
+      if (ownerId === userId) {
+        return res.status(400).json({ message: "自分のリストは保存できません" });
+      }
+      const owner = await storage.getUser(ownerId);
+      if (!owner) {
+        return res.status(404).json({ message: "List owner not found" });
+      }
+      await storage.saveList(userId, ownerId, listName, region);
+      res.json({ message: "保存しました" });
+    } catch (error) {
+      console.error("Error saving list:", error);
+      res.status(500).json({ message: "Failed to save list" });
+    }
+  });
+
+  app.delete("/api/saved-lists", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const ownerId = req.query.ownerId as string;
+      const listName = req.query.list as string;
+      const region = req.query.region as string;
+      if (!ownerId || !listName || !region) {
+        return res.status(400).json({ message: "ownerId, list, region are required" });
+      }
+      const removed = await storage.unsaveList(userId, ownerId, listName, region);
+      if (removed) {
+        res.status(204).send();
+      } else {
+        res.status(404).json({ message: "Saved list not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to unsave list" });
+    }
+  });
+
   // 自分に共有されているリスト一覧
   app.get("/api/shared-lists", isAuthenticated, async (req: any, res) => {
     try {

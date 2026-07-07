@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus, Mail, ArrowRight } from "lucide-react";
+import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus, Mail, ArrowRight, Star, Bookmark } from "lucide-react";
 import { useLocation } from "wouter";
 
 // リスト作成で選べるジャンルタグ
@@ -96,6 +96,10 @@ export default function Home() {
   });
   const { data: sharedLists = [] } = useQuery<{ ownerId: string; listName: string; region: string; ownerName: string | null }[]>({
     queryKey: ["/api/shared-lists"],
+    enabled: isAuthenticated,
+  });
+  const { data: savedLists = [] } = useQuery<{ id: number; ownerId: string; listName: string; region: string; ownerName: string | null }[]>({
+    queryKey: ["/api/saved-lists"],
     enabled: isAuthenticated,
   });
 
@@ -368,6 +372,34 @@ export default function Home() {
     },
   });
 
+  // 保存済み（他人のリストのブックマーク）
+  const isCurrentListSaved = !!viewingList && savedLists.some(
+    s => s.ownerId === viewingList.ownerId && s.listName === viewingList.listName && s.region === viewingList.region
+  );
+
+  const toggleSaveMutation = useMutation({
+    mutationFn: async () => {
+      if (!viewingList) return;
+      if (isCurrentListSaved) {
+        await apiRequest(
+          "DELETE",
+          `/api/saved-lists?ownerId=${encodeURIComponent(viewingList.ownerId)}&list=${encodeURIComponent(viewingList.listName)}&region=${encodeURIComponent(viewingList.region)}`
+        );
+      } else {
+        await apiRequest("POST", "/api/saved-lists", {
+          ownerId: viewingList.ownerId,
+          listName: viewingList.listName,
+          region: viewingList.region,
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast({ title: isCurrentListSaved ? "保存を解除しました" : "保存しました" });
+    },
+    onError: (error) => toast({ title: "エラー", description: error.message, variant: "destructive" }),
+  });
+
   // 共有リンクのコピー
   const copyShareLink = () => {
     if (!viewingList) return;
@@ -491,6 +523,16 @@ export default function Home() {
                   >
                     <Share2 className="h-5 w-5" />
                   </button>
+                  {isAuthenticated && viewingList.ownerId !== userId && (
+                    <button
+                      onClick={() => toggleSaveMutation.mutate()}
+                      aria-label={isCurrentListSaved ? "保存を解除" : "保存"}
+                      disabled={toggleSaveMutation.isPending}
+                      className="text-black/50 hover:text-black transition-colors"
+                    >
+                      <Bookmark className={`h-5 w-5 ${isCurrentListSaved ? "fill-[#E9C46A] text-[#E9C46A]" : ""}`} />
+                    </button>
+                  )}
                   {isListOwner && (
                     <button
                       onClick={() => setShowInvite(true)}
@@ -536,19 +578,20 @@ export default function Home() {
                 ) : (
                   <div className="space-y-4">
                     {listSpots.map((spot) => (
-                      <div key={spot.id} className="border border-black px-4 py-4 flex items-start justify-between gap-3">
+                      <div key={spot.id} className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
+                          <Star className="inline-block h-4 w-4 mr-1 -mt-1 fill-[#E9C46A] text-[#E9C46A]" />
                           {spot.url ? (
                             <a
                               href={spot.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="underline hover:opacity-70 transition-opacity"
+                              className="font-bold underline hover:opacity-70 transition-opacity"
                             >
                               {spot.placeName || 'タイトルなし'}
                             </a>
                           ) : (
-                            <span>{spot.placeName || 'タイトルなし'}</span>
+                            <span className="font-bold">{spot.placeName || 'タイトルなし'}</span>
                           )}
                           {spot.comment && (
                             <span>・・・ {spot.comment}</span>
@@ -632,9 +675,10 @@ export default function Home() {
         ) : (
           <>
             {isAuthenticated ? (
-              /* マイページ: 場所ごとにリストをグルーピング表示 */
+              /* マイページ: マイリスト / 共有 / 保存済み の3セクション */
               <div>
-                <h2 className="text-center font-bold mb-10">マイリスト</h2>
+                {/* ── マイリスト ── */}
+                <h2 className="text-[#3D3BF3] font-black text-lg mb-4">マイリスト</h2>
                 {(() => {
                   const grouped = spots.reduce((acc, spot) => {
                     if (!acc[spot.region]) acc[spot.region] = [];
@@ -651,12 +695,12 @@ export default function Home() {
                       ))}
                     </div>
                   ) : regions.length === 0 ? (
-                    <p className="text-center py-16 font-bold">まだリストがありません</p>
+                    <p className="text-sm text-black/60 py-2">まだリストがありません</p>
                   ) : (
                     <div className="space-y-10">
                       {regions.map((region) => (
                         <div key={region}>
-                          <h3 className="text-[#3D3BF3] font-black text-lg mb-4">【{region}】</h3>
+                          <h3 className="font-black mb-4">【{region}】</h3>
                           <div className="space-y-4">
                             {grouped[region].map((listName) => (
                               <button
@@ -674,10 +718,12 @@ export default function Home() {
                   );
                 })()}
 
-                {/* 共有リスト（招待されたリスト） */}
-                {sharedLists.length > 0 && (
-                  <div className="mt-12">
-                    <h3 className="text-[#3D3BF3] font-black text-lg mb-4">【共有】</h3>
+                {/* ── 共有（招待されたリスト） ── */}
+                <div className="mt-12">
+                  <h2 className="text-[#3D3BF3] font-black text-lg mb-4">共有</h2>
+                  {sharedLists.length === 0 ? (
+                    <p className="text-sm text-black/60 py-2">まだ共有されたリストがありません</p>
+                  ) : (
                     <div className="space-y-4">
                       {sharedLists.map((sl) => (
                         <button
@@ -690,8 +736,29 @@ export default function Home() {
                         </button>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                {/* ── 保存済み ── */}
+                <div className="mt-12">
+                  <h2 className="text-[#3D3BF3] font-black text-lg mb-4">保存済み</h2>
+                  {savedLists.length === 0 ? (
+                    <p className="text-sm text-black/60 py-2">まだ保存したリストがありません</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {savedLists.map((sv) => (
+                        <button
+                          key={sv.id}
+                          onClick={() => setViewingList({ ownerId: sv.ownerId, listName: sv.listName, region: sv.region })}
+                          className="block bg-white border-2 border-black rounded-2xl px-8 py-4 font-bold text-lg w-full sm:w-72 text-center hover:opacity-90 transition-opacity"
+                        >
+                          {sv.region}✕{sv.listName}
+                          <span className="block text-xs font-normal text-black/60">{sv.ownerName}さんのリスト</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* 友達申請（承認待ち） */}
                 {friendRequests.length > 0 && (
