@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus } from "lucide-react";
+import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus, Mail } from "lucide-react";
 import { useLocation } from "wouter";
 
 // リスト作成で選べるジャンルタグ
@@ -39,6 +39,7 @@ export default function Home() {
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showAddSpot, setShowAddSpot] = useState(false);
   const [showCreateList, setShowCreateList] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [editListData, setEditListData] = useState<{
     region: string;
@@ -346,7 +347,7 @@ export default function Home() {
     : ["members-none"];
   const { data: members = [] } = useQuery<{ id: number; email: string }[]>({
     queryKey: membersQueryKey,
-    enabled: !!editListData && isListOwner,
+    enabled: isListOwner && (showInvite || !!editListData),
   });
 
   const addMemberMutation = useMutation({
@@ -432,6 +433,15 @@ export default function Home() {
                   >
                     <Share2 className="h-5 w-5" />
                   </button>
+                  {isListOwner && (
+                    <button
+                      onClick={() => setShowInvite(true)}
+                      aria-label="メンバーを招待"
+                      className="text-black/50 hover:text-black transition-colors"
+                    >
+                      <Mail className="h-5 w-5" />
+                    </button>
+                  )}
                   {isAuthenticated && !isListOwner && viewingList.ownerId !== userId && (
                     <button
                       onClick={() => friendRequestMutation.mutate(viewingList.ownerId)}
@@ -994,47 +1004,6 @@ export default function Home() {
               {saveListEditsMutation.isPending ? "保存中..." : "保存"}
             </Button>
 
-            {/* 共有メンバー（オーナーのみ） */}
-            {isListOwner && (
-              <div className="mt-8 pt-6 border-t border-black/20">
-                <h4 className="font-bold mb-1">共有メンバー</h4>
-                <p className="text-xs text-black/60 mb-3">
-                  招待したメールアドレスでログインした人が、このリストを一緒に編集できます
-                </p>
-                <div className="space-y-2 mb-3">
-                  {members.map((m) => (
-                    <div key={m.id} className="flex items-center justify-between gap-2 border border-black rounded-xl px-3 py-2">
-                      <span className="text-sm truncate">{m.email}</span>
-                      <button
-                        onClick={() => removeMemberMutation.mutate(m.id)}
-                        aria-label="メンバーを削除"
-                        className="shrink-0 text-black/50 hover:text-black transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="メールアドレスで招待"
-                    className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => inviteEmail.trim() && addMemberMutation.mutate()}
-                    className="bg-black text-white hover:bg-black/80 rounded-xl px-5 shrink-0"
-                    disabled={addMemberMutation.isPending}
-                  >
-                    追加
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {/* リスト削除（オーナーのみ） */}
             {isListOwner && (
               <div className="mt-8 pt-6 border-t border-black/20">
@@ -1049,6 +1018,60 @@ export default function Home() {
                 >
                   {deleteListMutation.isPending ? "削除中..." : "リストを削除"}
                 </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Invite Overlay（メンバー招待・独立） */}
+      {showInvite && isListOwner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowInvite(false)} />
+          <div className="relative bg-white border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-black">メンバーを招待</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowInvite(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <p className="text-xs text-black/60 mb-4">
+              招待したメールアドレスでログインした人が、このリストを一緒に編集できます。
+            </p>
+            <div className="flex gap-2 mb-4">
+              <Input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="メールアドレスで招待"
+                autoComplete="off"
+                className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
+              />
+              <Button
+                type="button"
+                onClick={() => inviteEmail.trim() && addMemberMutation.mutate()}
+                className="bg-black text-white hover:bg-black/80 rounded-xl px-5 shrink-0"
+                disabled={addMemberMutation.isPending}
+              >
+                招待
+              </Button>
+            </div>
+            {members.length === 0 ? (
+              <p className="text-sm text-center text-black/60 py-4">まだメンバーがいません</p>
+            ) : (
+              <div className="space-y-2">
+                {members.map((m) => (
+                  <div key={m.id} className="flex items-center justify-between gap-2 border border-black rounded-xl px-3 py-2">
+                    <span className="text-sm truncate">{m.email}</span>
+                    <button
+                      onClick={() => removeMemberMutation.mutate(m.id)}
+                      aria-label="メンバーを削除"
+                      className="shrink-0 text-black/50 hover:text-black transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
