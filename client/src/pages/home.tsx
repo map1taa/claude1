@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus, Mail } from "lucide-react";
+import { Plus, LogOut, Edit, X, MapPin, MessageCircle, Link2, Share2, UserPlus, Mail, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 // リスト作成で選べるジャンルタグ
@@ -259,6 +259,29 @@ export default function Home() {
     setEditListData(prev =>
       prev ? { ...prev, items: [...prev.items, { id: null, placeName: "", url: "", comment: "" }] } : prev
     );
+  };
+
+  // URLから店名を取得（矢印ボタン）
+  const [extractingIdx, setExtractingIdx] = useState<number | null>(null);
+  const extractNameForItem = async (idx: number, url: string) => {
+    if (!url.trim()) {
+      toast({ title: "先にURLを入力してください" });
+      return;
+    }
+    setExtractingIdx(idx);
+    try {
+      const res = await apiRequest("POST", "/api/extract-url", { url });
+      const data = await res.json() as { storeName?: string };
+      if (data.storeName && data.storeName.trim()) {
+        updateEditItem(idx, { placeName: data.storeName.trim() });
+      } else {
+        toast({ title: "店名を取得できませんでした", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "取得に失敗しました", variant: "destructive" });
+    } finally {
+      setExtractingIdx(null);
+    }
   };
 
   const saveListEditsMutation = useMutation({
@@ -1003,31 +1026,42 @@ export default function Home() {
             <div className="space-y-6 mb-6">
               {editListData.items.map((item, idx) => (
                 <div key={item.id ?? `new-${idx}`} className="space-y-3">
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold shrink-0">店名：</span>
-                    <Input
-                      value={item.placeName}
-                      onChange={(e) => updateEditItem(idx, { placeName: e.target.value })}
-                      className="flex-1 px-1 py-1 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold shrink-0">URL：</span>
+                  {/* URL → 矢印(店名取得) → 店名 */}
+                  <div className="flex items-center gap-2">
                     <Input
                       value={item.url}
                       onChange={(e) => updateEditItem(idx, { url: e.target.value })}
+                      placeholder="URL"
                       autoComplete="off"
-                      className="flex-1 px-1 py-1 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
+                      className="flex-1 min-w-0 px-1 py-1 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
                     />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold shrink-0">コメント：</span>
+                    <button
+                      type="button"
+                      onClick={() => extractNameForItem(idx, item.url)}
+                      aria-label="URLから店名を取得"
+                      disabled={extractingIdx === idx}
+                      className="shrink-0 w-8 h-8 rounded-full bg-[#E9C46A] hover:bg-[#e0b552] transition-colors flex items-center justify-center disabled:opacity-50"
+                    >
+                      {extractingIdx === idx ? (
+                        <div className="animate-spin h-4 w-4 border-b-2 border-black rounded-full"></div>
+                      ) : (
+                        <ArrowRight className="h-4 w-4" />
+                      )}
+                    </button>
                     <Input
-                      value={item.comment}
-                      onChange={(e) => updateEditItem(idx, { comment: e.target.value })}
-                      className="flex-1 px-1 py-1 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
+                      value={item.placeName}
+                      onChange={(e) => updateEditItem(idx, { placeName: e.target.value })}
+                      placeholder="店名"
+                      className="flex-1 min-w-0 px-1 py-1 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
                     />
                   </div>
+                  {/* コメント（プレースホルダのみ） */}
+                  <Input
+                    value={item.comment}
+                    onChange={(e) => updateEditItem(idx, { comment: e.target.value })}
+                    placeholder="コメント"
+                    className="w-full px-1 py-1 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
+                  />
                 </div>
               ))}
               {editListData.items.length === 0 && (
