@@ -42,9 +42,8 @@ export default function Home() {
   const [showInvite, setShowInvite] = useState(false);
   const [editingSpot, setEditingSpot] = useState<Spot | null>(null);
   const [editListData, setEditListData] = useState<{
-    region: string;
-    listName: string;
-    items: { id: number; placeName: string; url: string; comment: string }[];
+    title: string;
+    items: { id: number | null; placeName: string; url: string; comment: string }[];
   } | null>(null);
   const [, setLocation] = useLocation();
 
@@ -243,44 +242,80 @@ export default function Home() {
   const openEditList = () => {
     if (!viewingList) return;
     const items = listSpots
-      .map(s => ({ id: s.id, placeName: s.placeName || "", url: s.url || "", comment: s.comment || "" }));
-    setEditListData({ region: viewingList.region, listName: viewingList.listName, items });
+      .map(s => ({ id: s.id as number | null, placeName: s.placeName || "", url: s.url || "", comment: s.comment || "" }));
+    setEditListData({
+      title: `${viewingList.region}でおすすめの${viewingList.listName}`,
+      items,
+    });
   };
 
-  const updateEditItem = (idx: number, patch: Partial<{ placeName: string; url: string }>) => {
+  const updateEditItem = (idx: number, patch: Partial<{ placeName: string; url: string; comment: string }>) => {
     setEditListData(prev =>
       prev ? { ...prev, items: prev.items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) } : prev
+    );
+  };
+
+  const addEditItem = () => {
+    setEditListData(prev =>
+      prev ? { ...prev, items: [...prev.items, { id: null, placeName: "", url: "", comment: "" }] } : prev
     );
   };
 
   const saveListEditsMutation = useMutation({
     mutationFn: async () => {
       if (!editListData || !viewingList) return;
-      // 各メモの更新（コメントは保持したまま送る）
-      for (const item of editListData.items) {
-        await apiRequest("PUT", `/api/spots/${item.id}`, {
-          placeName: item.placeName,
-          url: item.url,
-          comment: item.comment,
-        });
+
+      // 一行タイトル「〇〇でおすすめの△△」を場所・ジャンルに分解
+      const sep = "でおすすめの";
+      const sepIdx = editListData.title.indexOf(sep);
+      if (sepIdx === -1) {
+        throw new Error("リスト名は「〇〇でおすすめの△△」の形式で入力してください");
       }
-      // リストのタイトル（場所・ジャンル）変更はオーナーのみ
-      if (isListOwner && (editListData.listName !== viewingList.listName || editListData.region !== viewingList.region)) {
+      const newRegion = editListData.title.slice(0, sepIdx).trim();
+      const newListName = editListData.title.slice(sepIdx + sep.length).trim();
+      if (!newRegion || !newListName) {
+        throw new Error("場所名とジャンルを入力してください");
+      }
+
+      // 各お店の更新（既存はPUT、追加分は名前があればPOST）
+      for (const item of editListData.items) {
+        if (item.id !== null) {
+          await apiRequest("PUT", `/api/spots/${item.id}`, {
+            placeName: item.placeName,
+            url: item.url,
+            comment: item.comment,
+          });
+        } else if (item.placeName.trim()) {
+          await apiRequest("POST", "/api/spots", {
+            placeName: item.placeName,
+            url: item.url,
+            comment: item.comment,
+            listName: viewingList.listName,
+            region: viewingList.region,
+            ownerId: viewingList.ownerId,
+          });
+        }
+      }
+
+      // リストのタイトル変更はオーナーのみ
+      if (isListOwner && (newListName !== viewingList.listName || newRegion !== viewingList.region)) {
         await apiRequest("PATCH", "/api/spots/update-list", {
           oldListName: viewingList.listName,
-          newListName: editListData.listName,
+          newListName,
           oldRegion: viewingList.region,
-          newRegion: editListData.region,
+          newRegion,
         });
       }
+
+      return { newListName, newRegion };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries();
-      if (editListData && viewingList) {
+      if (viewingList && result) {
         setViewingList({
           ownerId: viewingList.ownerId,
-          listName: isListOwner ? editListData.listName : viewingList.listName,
-          region: isListOwner ? editListData.region : viewingList.region,
+          listName: isListOwner ? result.newListName : viewingList.listName,
+          region: isListOwner ? result.newRegion : viewingList.region,
         });
       }
       setEditListData(null);
@@ -954,40 +989,39 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* タイトル（場所 でおすすめの ジャンル、変更はオーナーのみ） */}
-            <div className="flex items-center gap-2 flex-wrap mb-8">
-              <Input
-                value={editListData.region}
-                onChange={(e) => setEditListData({ ...editListData, region: e.target.value })}
-                placeholder="場所名"
-                disabled={!isListOwner}
-                className="flex-1 min-w-[6rem] px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
-              />
-              <span className="font-bold shrink-0">でおすすめの</span>
-              <Input
-                value={editListData.listName}
-                onChange={(e) => setEditListData({ ...editListData, listName: e.target.value })}
-                placeholder="ジャンル"
-                disabled={!isListOwner}
-                className="flex-1 min-w-[6rem] px-3 py-2 border-2 border-black bg-white rounded-xl text-lg"
-              />
-            </div>
+            {/* リスト名（一行で編集、変更はオーナーのみ） */}
+            <Input
+              value={editListData.title}
+              onChange={(e) => setEditListData({ ...editListData, title: e.target.value })}
+              placeholder="〇〇でおすすめの△△"
+              disabled={!isListOwner}
+              className="mb-8 px-3 py-2 border-2 border-black bg-white rounded-xl text-lg font-bold"
+            />
 
-            {/* 各メモ（名前・マップリンク） */}
-            <div className="space-y-4 mb-8">
+            {/* 各お店（名前｜コメント＋URLのセット） */}
+            <div className="space-y-4 mb-4">
               {editListData.items.map((item, idx) => (
-                <div key={item.id} className="border border-black rounded-xl p-4 space-y-2">
-                  <Input
-                    value={item.placeName}
-                    onChange={(e) => updateEditItem(idx, { placeName: e.target.value })}
-                    placeholder="名前"
-                    className="px-3 py-2 border-2 border-black bg-white rounded-xl"
-                  />
+                <div key={item.id ?? `new-${idx}`} className="border border-black rounded-xl p-4 space-y-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      value={item.placeName}
+                      onChange={(e) => updateEditItem(idx, { placeName: e.target.value })}
+                      placeholder="名前"
+                      className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
+                    />
+                    <Input
+                      value={item.comment}
+                      onChange={(e) => updateEditItem(idx, { comment: e.target.value })}
+                      placeholder="コメント"
+                      className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
+                    />
+                  </div>
                   <Input
                     value={item.url}
                     onChange={(e) => updateEditItem(idx, { url: e.target.value })}
                     placeholder="マップリンク（URL）"
-                    className="px-3 py-2 border-2 border-black bg-white rounded-xl"
+                    autoComplete="off"
+                    className="w-full px-3 py-2 border-2 border-black bg-white rounded-xl"
                   />
                 </div>
               ))}
@@ -995,6 +1029,16 @@ export default function Home() {
                 <p className="text-sm text-center py-4">このリストにはまだ場所がありません</p>
               )}
             </div>
+
+            {/* お店追加 */}
+            <button
+              type="button"
+              onClick={addEditItem}
+              className="w-full mb-8 py-2 border-2 border-dashed border-black rounded-xl font-bold hover:bg-black/5 transition-colors flex items-center justify-center gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              お店を追加
+            </button>
 
             <Button
               onClick={() => saveListEditsMutation.mutate()}
