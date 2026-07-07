@@ -981,7 +981,7 @@ export default function Home() {
       {editListData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setEditListData(null)} />
-          <div className="relative bg-white border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-[#DCEEFB] border-2 border-black rounded-3xl p-6 sm:p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-black">リストを編集</h3>
               <Button variant="ghost" size="sm" onClick={() => setEditListData(null)}>
@@ -995,25 +995,25 @@ export default function Home() {
               onChange={(e) => setEditListData({ ...editListData, title: e.target.value })}
               placeholder="〇〇でおすすめの△△"
               disabled={!isListOwner}
-              className="mb-8 px-3 py-2 border-2 border-black bg-white rounded-xl text-lg font-bold"
+              className="mb-8 px-1 py-2 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none text-lg font-bold focus-visible:ring-0 focus-visible:border-black"
             />
 
             {/* 各お店（名前｜コメント＋URLのセット） */}
-            <div className="space-y-4 mb-4">
+            <div className="space-y-6 mb-6">
               {editListData.items.map((item, idx) => (
-                <div key={item.id ?? `new-${idx}`} className="border border-black rounded-xl p-4 space-y-2">
-                  <div className="flex flex-col sm:flex-row gap-2">
+                <div key={item.id ?? `new-${idx}`} className="space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Input
                       value={item.placeName}
                       onChange={(e) => updateEditItem(idx, { placeName: e.target.value })}
                       placeholder="名前"
-                      className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
+                      className="flex-1 px-1 py-2 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
                     />
                     <Input
                       value={item.comment}
                       onChange={(e) => updateEditItem(idx, { comment: e.target.value })}
                       placeholder="コメント"
-                      className="flex-1 px-3 py-2 border-2 border-black bg-white rounded-xl"
+                      className="flex-1 px-1 py-2 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
                     />
                   </div>
                   <Input
@@ -1021,7 +1021,7 @@ export default function Home() {
                     onChange={(e) => updateEditItem(idx, { url: e.target.value })}
                     placeholder="マップリンク（URL）"
                     autoComplete="off"
-                    className="w-full px-3 py-2 border-2 border-black bg-white rounded-xl"
+                    className="w-full px-1 py-2 border-0 border-b-2 border-dashed border-black/60 bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-black"
                   />
                 </div>
               ))}
